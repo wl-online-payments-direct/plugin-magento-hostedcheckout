@@ -1,0 +1,28 @@
+{
+    "name": "worldline/module-magento-payment-hosted-checkout",
+    "description": "Worldline Online Payments",
+    "require": {
+        "php": "~7.3.0||~7.4.0||~8.1.0",
+        "ext-json": "*",
+        "worldline/module-magento-payment-core": "*"
+    },
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": [
+        "OSL-3.0"
+    ],
+    "authors": [
+        {
+            "name": "Worldline Online Payments",
+            "homepage": "https://worldline.com/"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Worldline\\HostedCheckout\\": ""
+        }
+    }
+}

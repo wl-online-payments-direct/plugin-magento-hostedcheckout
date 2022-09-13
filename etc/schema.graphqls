@@ -1,0 +1,49 @@
+type Query {
+    processHCResult(paymentId: String!, mac: String!): ProcessPaymentResultOutput @resolver(class: "\\Worldline\\HostedCheckout\\GraphQl\\Resolver\\RequestResult") @doc(description: "Process hosted checkout response.")
+}
+
+input PaymentMethodInput {
+    worldline_hosted_checkout_vault: WorldlineVaultInput
+}
+
+input WorldlineVaultInput {
+    public_hash: String!
+    hosted_tokenization_id: String @doc(description:"Contains a hosted tokenization id session provided by Worldline SDK and should be sent with sale transaction details to the Worldline payment gateway.")
+}
+
+type AvailablePaymentMethod {
+    icons: [IconDetailsOutput] @resolver(class: "\\Worldline\\HostedCheckout\\GraphQl\\Resolver\\PaymentMethodIcons")
+}
+
+type IconDetailsOutput {
+    icon_title: String @doc(description: "Icon card type")
+    icon_url: String @doc(description: "Icon url")
+}
+
+type ProcessPaymentResultOutput {
+    result: String
+    orderIncrementId: String
+}
+
+type StoreConfig @doc(description: "The type contains information about a store config") {
+    worldline_hosted_checkout_pwa_route: String @doc(description: "Worldline HC Custom Return URL")
+    worldline_payment_hosted_checkout_allowspecific: Boolean @doc(description: "HC: Payment from Applicable Countries")
+    worldline_payment_hosted_checkout_specificcountry: String @doc(description: "HC: Payment from Specific Countries")
+}
+
+type Mutation {
+    processHCRedirectRequest(input: ProcessRequestInput): ProcessPaymentRequestOutput @resolver(class: "\\Worldline\\HostedCheckout\\GraphQl\\Resolver\\RequestRedirect") @doc(description: "Process hosted checkout redirect request.")
+}
+
+input ProcessRequestInput @doc(description: "Defines the input to run the processHCRedirectRequest mutation") {
+    cart_id: String! @doc(description: "The unique ID of a `Cart` object.")
+    payment_method: PaymentMethodHCRedirectInput! @doc(description: "The payment method data.")
+}
+
+input PaymentMethodHCRedirectInput {
+    code: String! @doc(description: "The internal name for the payment method.")
+}
+
+type ProcessPaymentRequestOutput {
+    redirect_url: String
+}
