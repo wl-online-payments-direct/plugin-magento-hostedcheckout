@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Service\Creator\Request;
 
+use OnlinePayments\Sdk\Domain\RedirectPaymentMethodSpecificInput;
 use OnlinePayments\Sdk\Domain\RedirectPaymentMethodSpecificInputFactory;
 use Worldline\HostedCheckout\Gateway\Config\Config;
 
@@ -29,6 +30,7 @@ class RedirectPaymentMethodSpecificInputDataBuilder
 
     public function build()
     {
+        /** @var RedirectPaymentMethodSpecificInput $redirectPaymentMethodSpecificInput */
         $redirectPaymentMethodSpecificInput = $this->redirectPaymentMethodSpecificInputFactory->create();
         $authMode = $this->config->getAuthorizationMode();
         $redirectPaymentMethodSpecificInput->setRequiresApproval($authMode !== Config::AUTHORIZATION_MODE_SALE);

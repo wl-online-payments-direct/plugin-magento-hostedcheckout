@@ -36,7 +36,7 @@ class TransactionSale extends AbstractTransaction
             throw new LocalizedException(__('Hosted checkout id is missing'));
         }
 
-        $response = $this->request->create($hostedCheckoutId);
+        $response = $this->request->create($hostedCheckoutId, $data[PaymentDataBuilder::STORE_ID]);
         $this->writeLogIfNeeded($data, $response);
 
         return $response;

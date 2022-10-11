@@ -14,10 +14,14 @@ use Magento\Quote\Api\Data\PaymentInterface;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Worldline\HostedCheckout\Api\RedirectManagementInterface;
+use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
 use Worldline\HostedCheckout\Service\Creator\Request;
 use Worldline\HostedCheckout\Service\Creator\RequestBuilder;
 use Worldline\PaymentCore\Model\DataAssigner\DataAssignerInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class RedirectManagement implements RedirectManagementInterface
 {
     /**
@@ -90,14 +94,6 @@ class RedirectManagement implements RedirectManagementInterface
     ): string {
         $quote = $this->cartRepository->get($cartId);
 
-        $additionalData = $paymentMethod->getAdditionalData();
-        $additionalData['agent'] = $this->request->getHeader('accept');
-        $additionalData['user-agent'] = $this->request->getHeader('user-agent');
-
-        foreach ($this->dataAssignerPool as $dataAssigner) {
-            $dataAssigner->assign($quote->getPayment(), $additionalData);
-        }
-
         return $this->process($quote, $paymentMethod, $billingAddress);
     }
 
@@ -133,14 +129,23 @@ class RedirectManagement implements RedirectManagementInterface
     ): string {
         $this->paymentInformationManagement->savePaymentInformation($quote->getId(), $paymentMethod, $billingAddress);
         $payment = $quote->getPayment();
+
+        $additionalData = $paymentMethod->getAdditionalData();
+        $additionalData['agent'] = $this->request->getHeader('accept');
+        $additionalData['user-agent'] = $this->request->getHeader('user-agent');
+
+        foreach ($this->dataAssignerPool as $dataAssigner) {
+            $dataAssigner->assign($quote->getPayment(), $additionalData);
+        }
+
         $quote->reserveOrderId();
 
         $this->setToken($quote, $paymentMethod);
 
         $request = $this->createRequestBuilder->build($quote);
-        $response = $this->createRequest->create($request);
+        $response = $this->createRequest->create($request, (int)$quote->getStoreId());
         $payment->setAdditionalInformation('return_id', $response->getRETURNMAC());
-        $payment->setAdditionalInformation('hosted_checkout_id', $response->getHostedCheckoutId());
+        $payment->setAdditionalInformation(PaymentDataBuilder::HOSTED_CHECKOUT_ID, $response->getHostedCheckoutId());
 
         $this->cartRepository->save($quote);
 

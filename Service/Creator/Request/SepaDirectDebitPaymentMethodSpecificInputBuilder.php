@@ -6,9 +6,11 @@ namespace Worldline\HostedCheckout\Service\Creator\Request;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Quote\Api\Data\CartInterface;
+use OnlinePayments\Sdk\Domain\CreateMandateRequest;
 use OnlinePayments\Sdk\Domain\CreateMandateRequestFactory;
 use OnlinePayments\Sdk\Domain\SepaDirectDebitPaymentMethodSpecificInputBase;
 use OnlinePayments\Sdk\Domain\SepaDirectDebitPaymentMethodSpecificInputBaseFactory;
+use OnlinePayments\Sdk\Domain\SepaDirectDebitPaymentProduct771SpecificInputBase;
 use OnlinePayments\Sdk\Domain\SepaDirectDebitPaymentProduct771SpecificInputBaseFactory;
 use Worldline\HostedCheckout\Gateway\Config\Config;
 
@@ -58,7 +60,10 @@ class SepaDirectDebitPaymentMethodSpecificInputBuilder
         /** @var SepaDirectDebitPaymentMethodSpecificInputBase $debitPaymentMethodSpecificInput */
         $debitPaymentMethodSpecificInput = $this->debitPaymentMethodSpecificInputBaseFactory->create();
 
+        /** @var SepaDirectDebitPaymentProduct771SpecificInputBase $paymentProduct */
         $paymentProduct = $this->debitPaymentProduct771SpecificInputBaseFactory->create();
+
+        /** @var CreateMandateRequest $paymentProduct */
         $mandate = $this->createMandateRequestFactory->create();
 
         $mandate->setCustomerReference($quote->getReservedOrderId());

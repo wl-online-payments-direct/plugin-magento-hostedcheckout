@@ -35,8 +35,8 @@ class TransactionSubmitForSettlement extends AbstractTransaction
 
     protected function process(array $data): CaptureResponse
     {
-        return $this->modelClient->getClient()
-            ->merchant($this->worldlineConfig->getMerchantId())
+        return $this->modelClient->getClient($data[CaptureDataBuilder::STORE_ID])
+            ->merchant($this->worldlineConfig->getMerchantId($data[CaptureDataBuilder::STORE_ID]))
             ->payments()
             ->capturePayment(
                 $data[CaptureDataBuilder::TRANSACTION_ID],

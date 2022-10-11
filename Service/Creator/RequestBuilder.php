@@ -76,9 +76,10 @@ class RequestBuilder
         $createHostedCheckoutRequest->setCardPaymentMethodSpecificInput(
             $this->cardPaymentMethodSpecificInputDataBuilder->build($quote)
         );
-        $createHostedCheckoutRequest->setSepaDirectDebitPaymentMethodSpecificInput(
-            $this->debitPaymentMethodSpecificInputBuilder->build($quote)
-        );
+        // @TODO: The sepa data is commented on purpose for now, it will back after unblocking
+//        $createHostedCheckoutRequest->setSepaDirectDebitPaymentMethodSpecificInput(
+//            $this->debitPaymentMethodSpecificInputBuilder->build($quote)
+//        );
 
         return $createHostedCheckoutRequest;
     }

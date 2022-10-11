@@ -69,7 +69,7 @@
                 <field id="currency" translate="label" type="multiselect" sortOrder="80" showInDefault="1" canRestore="1">
                     <label>Payment from Specific Currencies</label>
                     <source_model>Magento\Config\Model\Config\Source\Locale\Currency\All</source_model>
-                    <can_be_empty>1</can_be_empty>
+                    <validate>required-entry</validate>
                     <depends>
                         <field id="active">1</field>
                         <field id="allow_specific_currency">1</field>
@@ -87,7 +87,7 @@
                 <field id="customer_group" translate="label" type="multiselect" sortOrder="100" showInDefault="1" showInWebsite="1">
                     <label>Payment from Specific Customer Groups</label>
                     <source_model>Magento\Customer\Model\Customer\Source\GroupSourceInterface</source_model>
-                    <can_be_empty>1</can_be_empty>
+                    <validate>required-entry</validate>
                     <depends>
                         <field id="active">1</field>
                         <field id="allow_specific_customer_group">1</field>
@@ -153,7 +153,7 @@
                 </field>
                 <field id="order_status" type="select" translate="label" sortOrder="180" showInDefault="1" showInWebsite="1">
                     <label>Default Order Status</label>
-                    <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
+                    <source_model>Worldline\PaymentCore\Model\Config\Source\OrderStatusOptions</source_model>
                     <depends>
                         <field id="active">1</field>
                     </depends>
@@ -184,22 +184,23 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="direct_debit_recurrence_type" translate="label" type="select" sortOrder="230" showInDefault="1" showInWebsite="1">
-                    <label>Direct Debit Recurrence Type</label>
-                    <source_model>Worldline\HostedCheckout\Config\Source\DirectDebit\RecurrenceType</source_model>
-                    <config_path>payment/worldline_hosted_checkout/direct_debit_recurrence_type</config_path>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
-                </field>
-                <field id="direct_debit_signature_type" translate="label" type="select" sortOrder="240" showInDefault="1" showInWebsite="1">
-                    <label>Direct Debit Signature Type</label>
-                    <source_model>Worldline\HostedCheckout\Config\Source\DirectDebit\SignatureType</source_model>
-                    <config_path>payment/worldline_hosted_checkout/direct_debit_signature_type</config_path>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
-                </field>
+                <!-- @TODO: The settings are commented on purpose for now, they will back after unblocking -->
+<!--                <field id="direct_debit_recurrence_type" translate="label" type="select" sortOrder="230" showInDefault="1" showInWebsite="1">-->
+<!--                    <label>Direct Debit Recurrence Type</label>-->
+<!--                    <source_model>Worldline\HostedCheckout\Config\Source\DirectDebit\RecurrenceType</source_model>-->
+<!--                    <config_path>payment/worldline_hosted_checkout/direct_debit_recurrence_type</config_path>-->
+<!--                    <depends>-->
+<!--                        <field id="active">1</field>-->
+<!--                    </depends>-->
+<!--                </field>-->
+<!--                <field id="direct_debit_signature_type" translate="label" type="select" sortOrder="240" showInDefault="1" showInWebsite="1">-->
+<!--                    <label>Direct Debit Signature Type</label>-->
+<!--                    <source_model>Worldline\HostedCheckout\Config\Source\DirectDebit\SignatureType</source_model>-->
+<!--                    <config_path>payment/worldline_hosted_checkout/direct_debit_signature_type</config_path>-->
+<!--                    <depends>-->
+<!--                        <field id="active">1</field>-->
+<!--                    </depends>-->
+<!--                </field>-->
             </group>
         </section>
     </system>

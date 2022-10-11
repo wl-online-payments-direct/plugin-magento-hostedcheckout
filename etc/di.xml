@@ -19,6 +19,37 @@
         </arguments>
     </type>
 
+    <type name="Worldline\PaymentCore\Model\PaymentStatusCode\StatusCodePool">
+        <arguments>
+            <argument name="statusCodeRetrievers" xsi:type="array">
+                <item name="worldline_hosted_checkout" xsi:type="object">Worldline\HostedCheckout\Model\StatusCodeRetriever</item>
+                <item name="worldline_hosted_checkout_vault" xsi:type="object">Worldline\HostedCheckout\Model\StatusCodeRetriever</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Payment\Model\Method\Adapter">
+        <plugin name="Worldline_HostedCheckout::replace_payment_action"
+                type="Worldline\HostedCheckout\Plugin\Payment\Model\Method\Adapter\ReplacePaymentAction"/>
+    </type>
+
+    <type name="Worldline\HostedCheckout\Plugin\Payment\Model\Method\Adapter\ReplacePaymentAction">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="bancontact" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\BancontactHandler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Worldline\PaymentCore\Model\ResourceModel\PendingOrderProvider">
+        <arguments>
+            <argument name="allowedPaymentMethods" xsi:type="array">
+                <item name="worldline_hosted_checkout" xsi:type="const">Worldline\HostedCheckout\UI\ConfigProvider::HC_CODE</item>
+                <item name="worldline_hosted_checkout_vault" xsi:type="const">Worldline\HostedCheckout\UI\ConfigProvider::HC_VAULT_CODE</item>
+            </argument>
+        </arguments>
+    </type>
+
     <!-- ______________________________________ Payment method configuration ______________________________________ -->
 
     <type name="Worldline\HostedCheckout\Gateway\Config\Config">

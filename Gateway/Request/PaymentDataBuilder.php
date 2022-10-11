@@ -10,6 +10,7 @@ use Worldline\PaymentCore\Gateway\SubjectReader;
 class PaymentDataBuilder implements BuilderInterface
 {
     public const AMOUNT = 'amount';
+    public const STORE_ID = 'store_id';
     public const HOSTED_CHECKOUT_ID = 'hosted_checkout_id';
 
     /**
@@ -35,6 +36,7 @@ class PaymentDataBuilder implements BuilderInterface
 
         return [
             self::AMOUNT => $amount,
+            self::STORE_ID => (int)$payment->getMethodInstance()->getStore(),
             self::HOSTED_CHECKOUT_ID => $payment->getAdditionalInformation('hosted_checkout_id'),
         ];
     }

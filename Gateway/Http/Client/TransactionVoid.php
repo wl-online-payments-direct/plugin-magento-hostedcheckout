@@ -42,14 +42,15 @@ class TransactionVoid extends AbstractTransaction
      */
     protected function process(array $data)
     {
-        $payment = $this->modelClient->getClient()
-            ->merchant($this->worldlineConfig->getMerchantId())
+        $merchantId = $this->worldlineConfig->getMerchantId($data[VoidDataBuilder::STORE_ID]);
+        $payment = $this->modelClient->getClient($data[VoidDataBuilder::STORE_ID])
+            ->merchant($merchantId)
             ->payments()
             ->getPayment($data[VoidDataBuilder::TRANSACTION_ID]);
 
         if ($payment->getStatusOutput()->getIsCancellable()) {
-            return $this->modelClient->getClient()
-                ->merchant($this->worldlineConfig->getMerchantId())
+            return $this->modelClient->getClient($data[VoidDataBuilder::STORE_ID])
+                ->merchant($merchantId)
                 ->payments()
                 ->cancelPayment($data[VoidDataBuilder::TRANSACTION_ID]);
         }

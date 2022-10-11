@@ -5,20 +5,22 @@ declare(strict_types=1);
 namespace Worldline\HostedCheckout\Model;
 
 use Magento\Checkout\Model\Session;
-use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Quote\Model\QuoteManagement;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
 use Worldline\HostedCheckout\Service\Getter\Request;
-use Worldline\PaymentCore\Model\Config\OrderStatusUpdater;
-use Worldline\PaymentCore\Model\Order\PendingOrderException;
+use Worldline\PaymentCore\Api\Data\OrderStateInterfaceFactory;
+use Worldline\PaymentCore\Model\Order\RejectOrderException;
+use Worldline\PaymentCore\Model\OrderState;
 use Worldline\PaymentCore\Model\ResourceModel\Quote as QuoteResource;
 
 class ReturnRequestProcessor
 {
-    private const CANCELLED_BY_CONSUMER_STATUS = 'CANCELLED_BY_CONSUMER';
-    private const REDIRECTED_STATUS = 'REDIRECTED';
+    public const SUCCESS_STATE = 'success';
+    public const WAITING_STATE = 'waiting';
+    public const FAIL_STATE = 'fail';
+
+    private const SUCCESSFUL_STATUS_CATEGORY = 'SUCCESSFUL';
 
     /**
      * @var Session
@@ -31,11 +33,6 @@ class ReturnRequestProcessor
     private $logger;
 
     /**
-     * @var OrderStatusUpdater
-     */
-    private $orderStatusUpdater;
-
-    /**
      * @var Request
      */
     private $getRequest;
@@ -46,85 +43,85 @@ class ReturnRequestProcessor
     private $quoteResource;
 
     /**
-     * @var QuoteManagement
-     */
-    private $quoteManagement;
-
-    /**
      * @var OrderFactory
      */
     private $orderFactory;
 
+    /**
+     * @var OrderStateInterfaceFactory
+     */
+    private $orderStateFactory;
+
+    /**
+     * @var AddressSaveProcessor
+     */
+    private $addressSaveProcessor;
+
     public function __construct(
         Session $checkoutSession,
         LoggerInterface $logger,
-        OrderStatusUpdater $orderStatusUpdater,
         Request $getRequest,
         QuoteResource $quoteResource,
-        QuoteManagement $quoteManagement,
-        OrderFactory $orderFactory
+        OrderFactory $orderFactory,
+        OrderStateInterfaceFactory $orderStateFactory,
+        AddressSaveProcessor $addressSaveProcessor
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->logger = $logger;
-        $this->orderStatusUpdater = $orderStatusUpdater;
         $this->getRequest = $getRequest;
         $this->quoteResource = $quoteResource;
-        $this->quoteManagement = $quoteManagement;
         $this->orderFactory = $orderFactory;
+        $this->orderStateFactory = $orderStateFactory;
+        $this->addressSaveProcessor = $addressSaveProcessor;
     }
 
-    /**
-     * @param string $hostedCheckoutId
-     * @param string $returnId
-     * @return string|null
-     *
-     * @throws LocalizedException
-     * @throws CouldNotSaveException
-     */
-    public function processRequest(string $hostedCheckoutId, string $returnId): ?string
+    public function processRequest(string $hostedCheckoutId, string $returnId): OrderState
     {
         if (!$hostedCheckoutId || !$returnId) {
             throw new LocalizedException(__('Invalid request'));
         }
 
+        $quote = $this->quoteResource->getQuoteByWorldlinePaymentId($hostedCheckoutId);
+
         try {
-            $request = $this->getRequest->create($hostedCheckoutId);
+            $request = $this->getRequest->create($hostedCheckoutId, (int)$quote->getStoreId());
         } catch (\Exception $e) {
             $this->logger->debug($e->getMessage());
             throw new LocalizedException(__('The payment has failed, please, try again'));
         }
 
-        if (self::CANCELLED_BY_CONSUMER_STATUS === $request->getStatus()
-            || self:: REDIRECTED_STATUS === $request->getCreatedPaymentOutput()->getPayment()->getStatus()) {
-            throw new LocalizedException(__('Cancelled by consumer'));
+        /** @var OrderState $orderState */
+        $orderState = $this->orderStateFactory->create();
+
+        if (self::SUCCESSFUL_STATUS_CATEGORY !== $request->getCreatedPaymentOutput()->getPaymentStatusCategory()) {
+            $this->addressSaveProcessor->saveAddress($quote);
+            throw new RejectOrderException(__('The payment has rejected, please, try again'));
         }
 
-        $quote = $this->quoteResource->getQuoteByWorldlinePaymentId($hostedCheckoutId);
         if ($quote->getPayment()->getAdditionalInformation('return_id') !== $returnId) {
             throw new LocalizedException(__('Wrong return id'));
         }
 
-        $order = $this->orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
+        $reservedOrderId = (string)$quote->getReservedOrderId();
+        $orderState->setIncrementId($reservedOrderId);
+
+        $order = $this->orderFactory->create()->loadByIncrementId($reservedOrderId);
         if (!$order->getId()) {
-            $quote->setIsActive(false);
-            $this->quoteResource->saveCart($quote);
+            $orderState->setState(self::WAITING_STATE);
+            $this->addressSaveProcessor->saveAddress($quote);
             $this->checkoutSession->clearStorage();
-            throw new PendingOrderException(
-                __(
-                    'Thank you for your order %1.'
-                    . ' Your order is still being processed and you will receive a confirmation e-mail.'
-                    . ' Please contact us in case you don\'t receive the confirmation within 10 minutes.',
-                    $quote->getReservedOrderId()
-                )
-            );
+            $this->checkoutSession->setLastRealOrderId($reservedOrderId);
+
+            return $orderState;
         }
 
+        $orderState->setState(self::SUCCESS_STATE);
         $orderId = $this->checkoutSession->getLastRealOrder()->getEntityId();
         $this->checkoutSession->setLastOrderId($orderId);
-        $this->checkoutSession->setLastRealOrderId($quote->getReservedOrderId());
+        $this->checkoutSession->setLastRealOrderId($reservedOrderId);
         $this->checkoutSession->setLastQuoteId($quote->getId());
         $this->checkoutSession->setLastSuccessQuoteId($quote->getId());
 
-        return (string) $quote->getReservedOrderId();
+        return $orderState;
     }
 }

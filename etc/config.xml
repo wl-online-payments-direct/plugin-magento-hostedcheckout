@@ -30,7 +30,7 @@
                 <can_deny_payment>1</can_deny_payment>
                 <can_sale>1</can_sale>
                 <authorization_mode>final</authorization_mode>
-                <order_status>pending</order_status>
+                <order_status>processing</order_status>
                 <group>worldline_group</group>
                 <vault>1</vault>
                 <cart_lines>1</cart_lines>
