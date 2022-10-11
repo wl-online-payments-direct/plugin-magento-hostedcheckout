@@ -9,6 +9,7 @@ use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Worldline\HostedCheckout\Model\ReturnRequestProcessor;
+use Worldline\PaymentCore\Model\OrderState;
 
 class RequestResult implements ResolverInterface
 {
@@ -23,40 +24,31 @@ class RequestResult implements ResolverInterface
         $this->returnRequestProcessor = $returnRequestProcessor;
     }
 
-    /**
-     * @param Field $field
-     * @param $context
-     * @param ResolveInfo $info
-     * @param array|null $value
-     * @param array|null $args
-     * @return array
-     * @throws \Exception
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     */
-    public function resolve(
-        Field $field,
-        $context,
-        ResolveInfo $info,
-        array $value = null,
-        array $args = null
-    ) {
+    public function resolve(Field $field, $context, ResolveInfo $info, array $value = null, array $args = null)
+    {
         $paymentId = $args['paymentId'] ?? '';
         $mac = $args['mac'] ?? '';
         if (!$paymentId || !$mac) {
             return [];
         }
 
-        // phpcs:ignore Magento2.Functions.DiscouragedFunction
-        sleep(2); // wait for the webhook
-
         try {
+            /** @var OrderState $orderState */
+            $orderState = $this->returnRequestProcessor->processRequest($paymentId, $mac);
+            if ($orderState->getState() === ReturnRequestProcessor::WAITING_STATE) {
+                $result['result'] = ReturnRequestProcessor::WAITING_STATE;
+                $result['orderIncrementId'] = $orderState->getIncrementId();
+
+                return $result;
+            }
+
             return [
-                'result' => 'success',
-                'orderIncrementId' => $this->returnRequestProcessor->processRequest($paymentId, $mac)
+                'result' => ReturnRequestProcessor::SUCCESS_STATE,
+                'orderIncrementId' => $orderState->getIncrementId()
             ];
         } catch (LocalizedException $e) {
             return [
-                'result' => 'fail',
+                'result' => ReturnRequestProcessor::FAIL_STATE,
                 'orderIncrementId' => ''
             ];
         }

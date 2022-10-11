@@ -16,4 +16,21 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Worldline\HostedCheckout\Model\ReturnRequestProcessor">
+        <arguments>
+            <argument name="addressSaveProcessor" xsi:type="object">Worldline\HostedCheckout\Model\AddressSaveProcessor\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Worldline\HostedCheckout\Plugin\Checkout\Controller\Cart\Index">
+        <arguments>
+            <argument name="addressSaveProcessor" xsi:type="object">Worldline\HostedCheckout\Model\AddressSaveProcessor\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Checkout\Controller\Index\Index">
+        <plugin sortOrder="100"
+                name="Worldline_HostedCheckout::SaveAddresses"
+                type="Worldline\HostedCheckout\Plugin\Checkout\Controller\Cart\Index"/>
+    </type>
 </config>

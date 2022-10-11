@@ -19,4 +19,12 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Worldline\PaymentCore\GraphQl\Model\PaymentIcons\IconsPool">
+        <arguments>
+            <argument name="iconsRetrievers" xsi:type="array">
+                <item name="worldline_hosted_checkout" xsi:type="object">Worldline\HostedCheckout\GraphQl\Model\IconsRetriever</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

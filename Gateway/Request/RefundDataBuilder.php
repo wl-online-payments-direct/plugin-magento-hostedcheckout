@@ -13,6 +13,7 @@ use Worldline\PaymentCore\Gateway\SubjectReader;
 
 class RefundDataBuilder implements BuilderInterface
 {
+    public const STORE_ID = 'store_id';
     public const TRANSACTION_ID = 'transaction_id';
     public const REFUND_REQUEST = 'refund_request';
 
@@ -56,7 +57,8 @@ class RefundDataBuilder implements BuilderInterface
 
         return [
             self::TRANSACTION_ID => $txnId,
-            self::REFUND_REQUEST => $this->getRefundRequest($buildSubject, $payment),
+            self::STORE_ID => (int)$payment->getOrder()->getStoreId(),
+            self::REFUND_REQUEST => $this->getRefundRequest($buildSubject, $payment)
         ];
     }
 

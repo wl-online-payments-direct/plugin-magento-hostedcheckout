@@ -5,4 +5,9 @@
         <observer name="Worldline_HostedCheckout::payment_method_is_active"
                   instance="Worldline\HostedCheckout\Observer\PaymentMethodIsActive" />
     </event>
+
+    <event name="sales_order_payment_place_start">
+        <observer name="Worldline_HostedCheckout::store_payment"
+                  instance="Worldline\HostedCheckout\Observer\StorePayment" />
+    </event>
 </config>

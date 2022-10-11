@@ -11,6 +11,7 @@ use Worldline\PaymentCore\Gateway\SubjectReader;
 
 class CaptureDataBuilder implements BuilderInterface
 {
+    public const STORE_ID = 'store_id';
     public const TRANSACTION_ID = 'transaction_id';
     public const CAPTURE_PAYMENT_REQUEST = 'capture_payment_request';
 
@@ -53,6 +54,7 @@ class CaptureDataBuilder implements BuilderInterface
         return [
             self::TRANSACTION_ID => $transactionId,
             self::CAPTURE_PAYMENT_REQUEST => $capturePaymentRequest,
+            self::STORE_ID => (int)$payment->getMethodInstance()->getStore()
         ];
     }
 }

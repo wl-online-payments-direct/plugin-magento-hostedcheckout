@@ -44,14 +44,15 @@ class Request
      * @link https://support.direct.ingenico.com/documentation/api/reference/#operation/CreateHostedCheckoutApi
      *
      * @param CreateHostedCheckoutRequest $request
+     * @param int|null $storeId
      * @return CreateHostedCheckoutResponse
      * @throws LocalizedException
      */
-    public function create(CreateHostedCheckoutRequest $request): CreateHostedCheckoutResponse
+    public function create(CreateHostedCheckoutRequest $request, ?int $storeId = null): CreateHostedCheckoutResponse
     {
         try {
-            return $this->clientProvider->getClient()
-                ->merchant($this->worldlineConfig->getMerchantId())
+            return $this->clientProvider->getClient($storeId)
+                ->merchant($this->worldlineConfig->getMerchantId($storeId))
                 ->hostedCheckout()
                 ->createHostedCheckout($request);
         } catch (Exception $e) {

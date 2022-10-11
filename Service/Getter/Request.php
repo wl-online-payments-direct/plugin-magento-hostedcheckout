@@ -10,6 +10,9 @@ use Worldline\PaymentCore\Model\Config\WorldlineConfig;
 
 class Request
 {
+    /**
+     * @var array
+     */
     private $cachedRequests = [];
 
     /**
@@ -35,14 +38,15 @@ class Request
      * @link: https://support.direct.ingenico.com/documentation/api/reference/#operation/GetHostedCheckoutApi
      *
      * @param string $hostedCheckoutId
+     * @param int|null $storeId
      * @return GetHostedCheckoutResponse
      * @throws \Exception
      */
-    public function create(string $hostedCheckoutId): GetHostedCheckoutResponse
+    public function create(string $hostedCheckoutId, ?int $storeId = null): GetHostedCheckoutResponse
     {
         if (!isset($this->cachedRequests[$hostedCheckoutId])) {
-            $this->cachedRequests[$hostedCheckoutId] = $this->clientProvider->getClient()
-                ->merchant($this->worldlineConfig->getMerchantId())
+            $this->cachedRequests[$hostedCheckoutId] = $this->clientProvider->getClient($storeId)
+                ->merchant($this->worldlineConfig->getMerchantId($storeId))
                 ->hostedCheckout()
                 ->getHostedCheckout($hostedCheckoutId);
         }

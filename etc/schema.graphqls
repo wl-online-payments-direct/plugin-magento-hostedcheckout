@@ -8,16 +8,6 @@ input PaymentMethodInput {
 
 input WorldlineVaultInput {
     public_hash: String!
-    hosted_tokenization_id: String @doc(description:"Contains a hosted tokenization id session provided by Worldline SDK and should be sent with sale transaction details to the Worldline payment gateway.")
-}
-
-type AvailablePaymentMethod {
-    icons: [IconDetailsOutput] @resolver(class: "\\Worldline\\HostedCheckout\\GraphQl\\Resolver\\PaymentMethodIcons")
-}
-
-type IconDetailsOutput {
-    icon_title: String @doc(description: "Icon card type")
-    icon_url: String @doc(description: "Icon url")
 }
 
 type ProcessPaymentResultOutput {
