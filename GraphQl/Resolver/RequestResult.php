@@ -9,6 +9,7 @@ use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Worldline\HostedCheckout\Model\ReturnRequestProcessor;
+use Worldline\PaymentCore\Model\Order\RejectOrderException;
 use Worldline\PaymentCore\Model\OrderState;
 
 class RequestResult implements ResolverInterface
@@ -24,6 +25,17 @@ class RequestResult implements ResolverInterface
         $this->returnRequestProcessor = $returnRequestProcessor;
     }
 
+    /**
+     * @param Field $field
+     * @param $context
+     * @param ResolveInfo $info
+     * @param array|null $value
+     * @param array|null $args
+     * @return array
+     * @throws RejectOrderException
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function resolve(Field $field, $context, ResolveInfo $info, array $value = null, array $args = null)
     {
         $paymentId = $args['paymentId'] ?? '';

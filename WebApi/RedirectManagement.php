@@ -19,6 +19,9 @@ use Worldline\HostedCheckout\Service\Creator\Request;
 use Worldline\HostedCheckout\Service\Creator\RequestBuilder;
 use Worldline\PaymentCore\Model\DataAssigner\DataAssignerInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class RedirectManagement implements RedirectManagementInterface
 {
     /**
