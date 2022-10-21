@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Service\Creator\Request;
 
+use Magento\Framework\Event\ManagerInterface;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Magento\Vault\Api\PaymentTokenManagementInterface;
@@ -11,6 +12,7 @@ use OnlinePayments\Sdk\Domain\CardPaymentMethodSpecificInput;
 use OnlinePayments\Sdk\Domain\CardPaymentMethodSpecificInputFactory;
 use OnlinePayments\Sdk\Domain\RedirectionDataFactory;
 use OnlinePayments\Sdk\Domain\ThreeDSecureFactory;
+use Worldline\HostedCheckout\UI\ConfigProvider;
 use Worldline\HostedCheckout\Gateway\Config\Config;
 
 class CardPaymentMethodSpecificInputDataBuilder
@@ -40,18 +42,25 @@ class CardPaymentMethodSpecificInputDataBuilder
      */
     private $redirectionDataFactory;
 
+    /**
+     * @var ManagerInterface
+     */
+    private $eventManager;
+
     public function __construct(
         Config $config,
         CardPaymentMethodSpecificInputFactory $cardPaymentMethodSpecificInputFactory,
         PaymentTokenManagementInterface $paymentTokenManagement,
         ThreeDSecureFactory $threeDSecureFactory,
-        RedirectionDataFactory $redirectionDataFactory
+        RedirectionDataFactory $redirectionDataFactory,
+        ManagerInterface $eventManager
     ) {
         $this->config = $config;
         $this->cardPaymentMethodSpecificInputFactory = $cardPaymentMethodSpecificInputFactory;
         $this->paymentTokenManagement = $paymentTokenManagement;
         $this->threeDSecureFactory = $threeDSecureFactory;
         $this->redirectionDataFactory = $redirectionDataFactory;
+        $this->eventManager = $eventManager;
     }
 
     public function build(CartInterface $quote): CardPaymentMethodSpecificInput
@@ -65,6 +74,9 @@ class CardPaymentMethodSpecificInputDataBuilder
         if ($token = $this->getToken($quote)) {
             $cardPaymentMethodSpecificInput->setToken($token);
         }
+
+        $args = ['quote' => $quote, 'card_payment_method_specific_input' => $cardPaymentMethodSpecificInput];
+        $this->eventManager->dispatch(ConfigProvider::HC_CODE . '_card_payment_method_specific_input_builder', $args);
 
         return $cardPaymentMethodSpecificInput;
     }

@@ -116,8 +116,7 @@ class ReturnRequestProcessor
         }
 
         $orderState->setState(self::SUCCESS_STATE);
-        $orderId = $this->checkoutSession->getLastRealOrder()->getEntityId();
-        $this->checkoutSession->setLastOrderId($orderId);
+        $this->checkoutSession->setLastOrderId((int) $order->getId());
         $this->checkoutSession->setLastRealOrderId($reservedOrderId);
         $this->checkoutSession->setLastQuoteId($quote->getId());
         $this->checkoutSession->setLastSuccessQuoteId($quote->getId());

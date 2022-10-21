@@ -131,6 +131,7 @@ class RedirectManagement implements RedirectManagementInterface
         $payment = $quote->getPayment();
 
         $additionalData = $paymentMethod->getAdditionalData();
+        $additionalData = array_merge((array)$paymentMethod->getAdditionalInformation(), (array)$additionalData);
         $additionalData['agent'] = $this->request->getHeader('accept');
         $additionalData['user-agent'] = $this->request->getHeader('user-agent');
 
