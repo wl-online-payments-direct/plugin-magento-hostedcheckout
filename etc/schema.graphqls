@@ -3,11 +3,27 @@ type Query {
 }
 
 input PaymentMethodInput {
-    worldline_hosted_checkout_vault: WorldlineVaultInput
+    worldline_hosted_checkout: WorldlineHCInput
+    worldline_hosted_checkout_vault: WorldlineHCVaultInput
 }
 
-input WorldlineVaultInput {
+input WorldlineHCInput {
+    color_depth: String
+    java_enabled: Boolean
+    locale: String
+    screen_height: String
+    screen_width: String
+    timezone_offset_utc_minutes: String
+}
+
+input WorldlineHCVaultInput {
     public_hash: String!
+    color_depth: String
+    java_enabled: Boolean
+    locale: String
+    screen_height: String
+    screen_width: String
+    timezone_offset_utc_minutes: String
 }
 
 type ProcessPaymentResultOutput {

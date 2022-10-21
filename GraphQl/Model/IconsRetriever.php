@@ -23,7 +23,6 @@ class IconsRetriever implements IconsRetrieverInterface
      * @param string $originalCode
      * @param int $storeId
      * @return array
-     *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function getIcons(string $code, string $originalCode, int $storeId): array
@@ -33,10 +32,6 @@ class IconsRetriever implements IconsRetrieverInterface
         return $this->getIconsDetails($icons);
     }
 
-    /**
-     * @param array $icons
-     * @return array
-     */
     private function getIconsDetails(array $icons): array
     {
         $iconsDetails = [];
