@@ -8,6 +8,7 @@ use Exception;
 use Magento\Checkout\Model\Session;
 use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
 use Worldline\HostedCheckout\Model\AddressSaveProcessor;
+use Worldline\HostedCheckout\Model\PaymentInfoCleaner;
 use Worldline\HostedCheckout\Service\Getter\Request;
 use Worldline\HostedCheckout\UI\ConfigProvider;
 
@@ -33,14 +34,21 @@ class Index
      */
     private $hcRequest;
 
+    /**
+     * @var PaymentInfoCleaner
+     */
+    private $paymentInfoCleaner;
+
     public function __construct(
         Session $checkoutSession,
         AddressSaveProcessor $addressSaveProcessor,
-        Request $hcRequest
+        Request $hcRequest,
+        PaymentInfoCleaner $paymentInfoCleaner
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->addressSaveProcessor = $addressSaveProcessor;
         $this->hcRequest = $hcRequest;
+        $this->paymentInfoCleaner = $paymentInfoCleaner;
     }
 
     public function beforeExecute(): void
@@ -65,6 +73,7 @@ class Index
 
         if (empty($worldlinePayment) || $worldlinePayment->getStatus() == self::REJECTED) {
             $this->addressSaveProcessor->saveAddress($quote);
+            $this->paymentInfoCleaner->clean($quote);
         }
     }
 }

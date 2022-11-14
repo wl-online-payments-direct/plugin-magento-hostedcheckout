@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\GraphQl\Model;
 
-use Worldline\HostedCheckout\Model\Ui\PaymentIconsProvider;
+use Worldline\PaymentCore\Model\Ui\PaymentIconsProvider;
 use Worldline\PaymentCore\GraphQl\Model\PaymentIcons\IconsRetrieverInterface;
 
 class IconsRetriever implements IconsRetrieverInterface
@@ -27,7 +27,7 @@ class IconsRetriever implements IconsRetrieverInterface
      */
     public function getIcons(string $code, string $originalCode, int $storeId): array
     {
-        $icons = $this->iconProvider->getFilteredIcons([], $storeId);
+        $icons = $this->iconProvider->getIcons($storeId);
 
         return $this->getIconsDetails($icons);
     }
@@ -37,8 +37,8 @@ class IconsRetriever implements IconsRetrieverInterface
         $iconsDetails = [];
         foreach ($icons as $icon) {
             $iconsDetails[] = [
-                IconsRetrieverInterface::ICON_TITLE => $icon['title'],
-                IconsRetrieverInterface::ICON_URL => $icon['url']
+                IconsRetrieverInterface::ICON_TITLE => $icon['title'] ?? '',
+                IconsRetrieverInterface::ICON_URL => $icon['url'] ?? '',
             ];
         }
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Worldline\HostedCheckout\Model;
 
 use Magento\Quote\Model\Quote\Payment;
+use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
 use Worldline\HostedCheckout\Service\Getter\Request as GetterRequest;
+use Worldline\PaymentCore\Api\PaymentManagerInterface;
 use Worldline\PaymentCore\Api\TransactionWLResponseManagerInterface;
 use Worldline\PaymentCore\Model\PaymentStatusCode\StatusCodeRetrieverInterface;
 use Worldline\PaymentCore\Model\Transaction\TransactionStatusInterface;
@@ -21,17 +23,24 @@ class StatusCodeRetriever implements StatusCodeRetrieverInterface
      */
     private $transactionWLResponseManager;
 
+    /**
+     * @var PaymentManagerInterface
+     */
+    private $paymentManager;
+
     public function __construct(
         GetterRequest $getterRequest,
-        TransactionWLResponseManagerInterface $transactionWLResponseManager
+        TransactionWLResponseManagerInterface $transactionWLResponseManager,
+        PaymentManagerInterface $paymentManager
     ) {
         $this->getterRequest = $getterRequest;
         $this->transactionWLResponseManager = $transactionWLResponseManager;
+        $this->paymentManager = $paymentManager;
     }
 
     public function getStatusCode(Payment $payment): ?int
     {
-        $hostedCheckoutId = (string)$payment->getAdditionalInformation('hosted_checkout_id');
+        $hostedCheckoutId = (string)$payment->getAdditionalInformation(PaymentDataBuilder::HOSTED_CHECKOUT_ID);
         if (!$hostedCheckoutId) {
             return null;
         }
@@ -48,6 +57,7 @@ class StatusCodeRetriever implements StatusCodeRetrieverInterface
             $statusCode,
             [TransactionStatusInterface::PENDING_CAPTURE_CODE, TransactionStatusInterface::CAPTURED_CODE]
         )) {
+            $this->paymentManager->savePayment($paymentResponse);
             $this->transactionWLResponseManager->saveTransaction($paymentResponse);
         }
 
