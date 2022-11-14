@@ -59,7 +59,7 @@ class TransactionSale extends AbstractTransaction
 
         if ($transactionAmountOfMoney !== $orderAmountOfMoney) {
             $this->logger->warning(__('Wrong amount'), [
-                'hosted_checkout_id' => $response->getCreatedPaymentOutput()->getPayment()->getId(),
+                PaymentDataBuilder::HOSTED_CHECKOUT_ID => $response->getCreatedPaymentOutput()->getPayment()->getId(),
                 'transaction_amount_of_money' => $transactionAmountOfMoney,
                 'order_amount_of_money' => $orderAmountOfMoney,
             ]);

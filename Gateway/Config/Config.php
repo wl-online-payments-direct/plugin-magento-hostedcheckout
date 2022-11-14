@@ -50,7 +50,7 @@ class Config extends PaymentGatewayConfig
         $this->appState = $appState;
     }
 
-    public function getAuthorizationMode($storeId = null): string
+    public function getAuthorizationMode(?int $storeId = null): string
     {
         if ($this->getValue(self::PAYMENT_ACTION, $storeId) === self::AUTHORIZE_CAPTURE) {
             return self::AUTHORIZATION_MODE_SALE;

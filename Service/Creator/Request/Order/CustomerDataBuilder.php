@@ -140,7 +140,8 @@ class CustomerDataBuilder
     {
         $contactDetails = $this->contactDetailsFactory->create();
         $contactDetails->setEmailAddress($this->billingAddress->getEmail());
-        $contactDetails->setPhoneNumber($this->billingAddress->getTelephone());
+        $telephone = preg_replace('/[^0-9\+]+/', '', (string) $this->billingAddress->getTelephone());
+        $contactDetails->setPhoneNumber($telephone);
         $this->customer->setContactDetails($contactDetails);
     }
 

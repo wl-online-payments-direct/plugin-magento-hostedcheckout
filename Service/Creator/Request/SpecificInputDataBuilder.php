@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Worldline\HostedCheckout\Service\Creator\Request;
 
 use Magento\Framework\Locale\Resolver;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Quote\Api\Data\CartInterface;
 use OnlinePayments\Sdk\Domain\HostedCheckoutSpecificInput;
 use OnlinePayments\Sdk\Domain\HostedCheckoutSpecificInputFactory;
 use Worldline\HostedCheckout\Gateway\Config\Config;
+use Worldline\HostedCheckout\UI\ConfigProvider;
 
 class SpecificInputDataBuilder
 {
+    public const HOSTED_CHECKOUT_SPECIFIC_INPUT = 'hosted_checkout_specific_input';
+
     /**
      * @var Config
      */
@@ -23,37 +27,40 @@ class SpecificInputDataBuilder
     private $store;
 
     /**
+     * @var ManagerInterface
+     */
+    private $eventManager;
+
+    /**
      * @var HostedCheckoutSpecificInputFactory
      */
     private $hostedCheckoutSpecificInputFactory;
 
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
-
     public function __construct(
         Config $config,
         Resolver $store,
-        HostedCheckoutSpecificInputFactory $hostedCheckoutSpecificInputFactory,
-        StoreManagerInterface $storeManager
+        ManagerInterface $eventManager,
+        HostedCheckoutSpecificInputFactory $hostedCheckoutSpecificInputFactory
     ) {
         $this->config = $config;
         $this->store = $store;
+        $this->eventManager = $eventManager;
         $this->hostedCheckoutSpecificInputFactory = $hostedCheckoutSpecificInputFactory;
-        $this->storeManager = $storeManager;
     }
 
-    public function build(): HostedCheckoutSpecificInput
+    public function build(CartInterface $quote): HostedCheckoutSpecificInput
     {
         $hostedCheckoutSpecificInput = $this->hostedCheckoutSpecificInputFactory->create();
         $hostedCheckoutSpecificInput->setLocale($this->store->getLocale());
-        $currentStoreId = (int) $this->storeManager->getStore()->getId();
+        $storeId = (int)$quote->getStoreId();
 
-        $hostedCheckoutSpecificInput->setReturnUrl($this->config->getReturnUrl($currentStoreId));
-        if ($variant = $this->config->getTemplateId()) {
+        $hostedCheckoutSpecificInput->setReturnUrl($this->config->getReturnUrl($storeId));
+        if ($variant = $this->config->getTemplateId($storeId)) {
             $hostedCheckoutSpecificInput->setVariant($variant);
         }
+
+        $args = ['quote' => $quote, self::HOSTED_CHECKOUT_SPECIFIC_INPUT => $hostedCheckoutSpecificInput];
+        $this->eventManager->dispatch(ConfigProvider::HC_CODE . '_hosted_checkout_specific_input_builder', $args);
 
         return $hostedCheckoutSpecificInput;
     }

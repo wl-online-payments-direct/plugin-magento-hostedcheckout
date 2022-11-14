@@ -48,6 +48,11 @@ class ReturnRequestProcessor
     private $orderFactory;
 
     /**
+     * @var PaymentInfoCleaner
+     */
+    private $paymentInfoCleaner;
+
+    /**
      * @var OrderStateInterfaceFactory
      */
     private $orderStateFactory;
@@ -63,6 +68,7 @@ class ReturnRequestProcessor
         Request $getRequest,
         QuoteResource $quoteResource,
         OrderFactory $orderFactory,
+        PaymentInfoCleaner $paymentInfoCleaner,
         OrderStateInterfaceFactory $orderStateFactory,
         AddressSaveProcessor $addressSaveProcessor
     ) {
@@ -71,20 +77,21 @@ class ReturnRequestProcessor
         $this->getRequest = $getRequest;
         $this->quoteResource = $quoteResource;
         $this->orderFactory = $orderFactory;
+        $this->paymentInfoCleaner = $paymentInfoCleaner;
         $this->orderStateFactory = $orderStateFactory;
         $this->addressSaveProcessor = $addressSaveProcessor;
     }
 
-    public function processRequest(string $hostedCheckoutId, string $returnId): OrderState
+    public function processRequest(string $paymentId, string $returnId): OrderState
     {
-        if (!$hostedCheckoutId || !$returnId) {
+        if (!$paymentId || !$returnId) {
             throw new LocalizedException(__('Invalid request'));
         }
 
-        $quote = $this->quoteResource->getQuoteByWorldlinePaymentId($hostedCheckoutId);
+        $quote = $this->quoteResource->getQuoteByWorldlinePaymentId($paymentId);
 
         try {
-            $request = $this->getRequest->create($hostedCheckoutId, (int)$quote->getStoreId());
+            $request = $this->getRequest->create($paymentId, (int)$quote->getStoreId());
         } catch (\Exception $e) {
             $this->logger->debug($e->getMessage());
             throw new LocalizedException(__('The payment has failed, please, try again'));
@@ -95,6 +102,7 @@ class ReturnRequestProcessor
 
         if (self::SUCCESSFUL_STATUS_CATEGORY !== $request->getCreatedPaymentOutput()->getPaymentStatusCategory()) {
             $this->addressSaveProcessor->saveAddress($quote);
+            $this->paymentInfoCleaner->clean($quote);
             throw new RejectOrderException(__('The payment has rejected, please, try again'));
         }
 

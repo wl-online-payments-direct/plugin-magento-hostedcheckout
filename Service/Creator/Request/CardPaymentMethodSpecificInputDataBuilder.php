@@ -11,6 +11,7 @@ use Magento\Vault\Api\PaymentTokenManagementInterface;
 use OnlinePayments\Sdk\Domain\CardPaymentMethodSpecificInput;
 use OnlinePayments\Sdk\Domain\CardPaymentMethodSpecificInputFactory;
 use OnlinePayments\Sdk\Domain\RedirectionDataFactory;
+use OnlinePayments\Sdk\Domain\ThreeDSecure;
 use OnlinePayments\Sdk\Domain\ThreeDSecureFactory;
 use Worldline\HostedCheckout\UI\ConfigProvider;
 use Worldline\HostedCheckout\Gateway\Config\Config;
@@ -65,11 +66,11 @@ class CardPaymentMethodSpecificInputDataBuilder
 
     public function build(CartInterface $quote): CardPaymentMethodSpecificInput
     {
+        $storeId = (int)$quote->getStoreId();
         /** @var CardPaymentMethodSpecificInput $cardPaymentMethodSpecificInput */
         $cardPaymentMethodSpecificInput = $this->cardPaymentMethodSpecificInputFactory->create();
-        $cardPaymentMethodSpecificInput->setAuthorizationMode($this->config->getAuthorizationMode());
-
-        $cardPaymentMethodSpecificInput->setThreeDSecure($this->getThreeDSecure());
+        $cardPaymentMethodSpecificInput->setThreeDSecure($this->getThreeDSecure($storeId));
+        $cardPaymentMethodSpecificInput->setAuthorizationMode($this->config->getAuthorizationMode($storeId));
 
         if ($token = $this->getToken($quote)) {
             $cardPaymentMethodSpecificInput->setToken($token);
@@ -81,12 +82,13 @@ class CardPaymentMethodSpecificInputDataBuilder
         return $cardPaymentMethodSpecificInput;
     }
 
-    private function getThreeDSecure()
+    private function getThreeDSecure(int $storeId): ThreeDSecure
     {
+        /** @var ThreeDSecure $threeDSecure */
         $threeDSecure = $this->threeDSecureFactory->create();
-        $threeDSecure->setSkipAuthentication($this->config->hasSkipAuthentication());
+        $threeDSecure->setSkipAuthentication($this->config->hasSkipAuthentication($storeId));
         $redirectionData = $this->redirectionDataFactory->create();
-        $redirectionData->setReturnUrl($this->config->getReturnUrl());
+        $redirectionData->setReturnUrl($this->config->getReturnUrl($storeId));
         $threeDSecure->setRedirectionData($redirectionData);
 
         return $threeDSecure;

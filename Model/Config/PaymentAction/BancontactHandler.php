@@ -6,8 +6,7 @@ namespace Worldline\HostedCheckout\Model\Config\PaymentAction;
 
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Worldline\HostedCheckout\Model\Config\PaymentActionReplaceHandlerInterface;
-use Worldline\PaymentCore\Api\TransactionRepositoryInterface;
-use Worldline\PaymentCore\Api\Data\TransactionInterface;
+use Worldline\PaymentCore\Api\PaymentRepositoryInterface;
 
 class BancontactHandler implements PaymentActionReplaceHandlerInterface
 {
@@ -15,25 +14,21 @@ class BancontactHandler implements PaymentActionReplaceHandlerInterface
     private const BANCONTACT_PAYMENT_ACTION = 'authorize_capture';
 
     /**
-     * @var TransactionRepositoryInterface
+     * @var PaymentRepositoryInterface
      */
-    private $transactionRepository;
+    private $paymentRepository;
 
-    public function __construct(TransactionRepositoryInterface $transactionRepository)
+    public function __construct(PaymentRepositoryInterface $paymentRepository)
     {
-        $this->transactionRepository = $transactionRepository;
+        $this->paymentRepository = $paymentRepository;
     }
 
     public function getPaymentAction(OrderPaymentInterface $payment): ?string
     {
         $incrementId = $payment->getOrder()->getIncrementId();
 
-        $transaction = $this->transactionRepository->getCaptureTransaction($incrementId);
-        if (!$transaction instanceof TransactionInterface) {
-            return null;
-        }
-
-        $paymentProductId = $transaction->getAdditionalData()[TransactionInterface::PAYMENT_PRODUCT_ID] ?? 0;
+        $worldlinePayment = $this->paymentRepository->get($incrementId);
+        $paymentProductId = (int) $worldlinePayment->getPaymentProductId();
 
         return self::BANCONTACT_PRODUCT_ID === $paymentProductId ? self::BANCONTACT_PAYMENT_ACTION : null;
     }

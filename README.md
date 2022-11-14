@@ -1,6 +1,11 @@
 # Worldline Online Payments
 
+## Hosted checkout
+
 Change log:
+
+1.2.0
+- General improvements and bug fixes
 
 1.1.1
 - PWA improvements and support
