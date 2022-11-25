@@ -7,6 +7,7 @@ namespace Worldline\HostedCheckout\UI;
 use Exception;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Session\SessionManagerInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Worldline\HostedCheckout\Gateway\Config\Config;
 use Worldline\PaymentCore\Model\Ui\PaymentIconsProvider;
@@ -34,25 +35,25 @@ class ConfigProvider implements ConfigProviderInterface
     private $config;
 
     /**
-     * @var SessionManagerInterface
-     */
-    private $session;
-
-    /**
      * @var PaymentIconsProvider
      */
     private $iconProvider;
 
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
     public function __construct(
         LoggerInterface $logger,
         Config $config,
-        SessionManagerInterface $session,
+        StoreManagerInterface $storeManager,
         PaymentIconsProvider $iconProvider
     ) {
         $this->logger = $logger;
         $this->config = $config;
-        $this->session = $session;
         $this->iconProvider = $iconProvider;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -61,7 +62,7 @@ class ConfigProvider implements ConfigProviderInterface
     public function getConfig(): array
     {
         try {
-            $storeId = (int) $this->session->getStoreId();
+            $storeId = (int) $this->storeManager->getStore()->getStoreId();
 
             return [
                 'payment' => [
