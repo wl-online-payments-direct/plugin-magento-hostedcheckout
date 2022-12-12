@@ -15,8 +15,8 @@ use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Worldline\HostedCheckout\Api\RedirectManagementInterface;
 use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
-use Worldline\HostedCheckout\Service\Creator\Request;
-use Worldline\HostedCheckout\Service\Creator\RequestBuilder;
+use Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutRequestBuilder;
+use Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutService;
 use Worldline\PaymentCore\Model\DataAssigner\DataAssignerInterface;
 
 /**
@@ -30,12 +30,12 @@ class RedirectManagement implements RedirectManagementInterface
     private $cartRepository;
 
     /**
-     * @var Request
+     * @var CreateHostedCheckoutService
      */
     private $createRequest;
 
     /**
-     * @var RequestBuilder
+     * @var CreateHostedCheckoutRequestBuilder
      */
     private $createRequestBuilder;
 
@@ -61,8 +61,8 @@ class RedirectManagement implements RedirectManagementInterface
 
     public function __construct(
         CartRepositoryInterface $cartRepository,
-        Request $createRequest,
-        RequestBuilder $createRequestBuilder,
+        CreateHostedCheckoutService $createRequest,
+        CreateHostedCheckoutRequestBuilder $createRequestBuilder,
         QuoteIdMaskFactory $quoteIdMaskFactory,
         RequestInterface $request,
         PaymentInformationManagementInterface $paymentInformationManagement,
@@ -144,7 +144,7 @@ class RedirectManagement implements RedirectManagementInterface
         $this->setToken($quote, $paymentMethod);
 
         $request = $this->createRequestBuilder->build($quote);
-        $response = $this->createRequest->create($request, (int)$quote->getStoreId());
+        $response = $this->createRequest->execute($request, (int)$quote->getStoreId());
         $payment->setAdditionalInformation('return_id', $response->getRETURNMAC());
         $payment->setAdditionalInformation(PaymentDataBuilder::HOSTED_CHECKOUT_ID, $response->getHostedCheckoutId());
 

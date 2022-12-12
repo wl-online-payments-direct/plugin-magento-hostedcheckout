@@ -4,8 +4,9 @@ define([
     'Magento_Vault/js/view/payment/vault-enabler',
     'Worldline_HostedCheckout/js/view/hosted-checkout/redirect',
     'Magento_Checkout/js/model/full-screen-loader',
-    'Worldline_PaymentCore/js/model/device-data'
-], function ($, Component, VaultEnabler, placeOrderAction, fullScreenLoader, deviceData) {
+    'Worldline_PaymentCore/js/model/device-data',
+    'Magento_Checkout/js/model/payment/additional-validators'
+], function ($, Component, VaultEnabler, placeOrderAction, fullScreenLoader, deviceData, additionalValidators) {
     'use strict';
 
     return Component.extend({
@@ -70,7 +71,8 @@ define([
             }
 
             if (!this.validate() ||
-                this.isPlaceOrderActionAllowed() !== true
+                (this.isPlaceOrderActionAllowed() !== true) ||
+                !additionalValidators.validate()
             ) {
                 return false;
             }

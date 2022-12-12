@@ -21,12 +21,7 @@ class PaymentDetailsHandler implements HandlerInterface
         $this->subjectReader = $subjectReader;
     }
 
-    /**
-     * @param array $handlingSubject
-     * @param array $response
-     * @return void
-     */
-    public function handle(array $handlingSubject, array $response)
+    public function handle(array $handlingSubject, array $response): void
     {
         $paymentDO = $this->subjectReader->readPayment($handlingSubject);
         /** @var GetHostedCheckoutResponse $response */
@@ -35,12 +30,12 @@ class PaymentDetailsHandler implements HandlerInterface
             return;
         }
 
-        $transaction = $response->getCreatedPaymentOutput()->getPayment();
+        $wlPayment = $response->getCreatedPaymentOutput()->getPayment();
 
         /** @var OrderPaymentInterface $payment */
         $payment = $paymentDO->getPayment();
-        $payment->setCcTransId($transaction->getId());
-        $payment->setLastTransId($transaction->getId());
-        $payment->setCcStatusDescription($transaction->getStatus());
+        $payment->setCcTransId($wlPayment->getId());
+        $payment->setLastTransId($wlPayment->getId());
+        $payment->setCcStatusDescription($wlPayment->getStatus());
     }
 }

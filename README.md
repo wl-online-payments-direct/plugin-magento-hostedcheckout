@@ -4,6 +4,11 @@
 
 Change log:
 
+1.4.0
+- Option added to enforce Strong Customer Authentication for every 3DS request
+- Improvements and support for 2.3.x magento versions
+- General code improvements and bug fixes
+
 1.3.1
 - Improve work for multi website instances
 

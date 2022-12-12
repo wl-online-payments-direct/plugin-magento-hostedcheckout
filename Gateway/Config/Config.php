@@ -24,6 +24,7 @@ class Config extends PaymentGatewayConfig
     public const KEY_ACTIVE = 'active';
     public const KEY_CART_LINES = 'cart_lines';
     public const SKIP_3D = 'skip_3d';
+    public const AUTHENTICATION_TRIGGER = 'authentication_trigger';
 
     public const DIRECT_DEBIT_RECURRENCE_TYPE = 'direct_debit_recurrence_type';
     public const DIRECT_DEBIT_SIGNATURE_TYPE = 'direct_debit_signature_type';
@@ -98,6 +99,11 @@ class Config extends PaymentGatewayConfig
     public function hasSkipAuthentication(?int $storeId = null): bool
     {
         return (bool) $this->getValue(self::SKIP_3D, $storeId);
+    }
+
+    public function isTriggerAnAuthentication(?int $storeId = null): bool
+    {
+        return (bool) $this->getValue(self::AUTHENTICATION_TRIGGER, $storeId);
     }
 
     public function getDirectDebitRecurrenceType(?int $storeId = null): string

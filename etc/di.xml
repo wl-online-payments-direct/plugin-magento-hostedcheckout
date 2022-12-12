@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference type="Worldline\HostedCheckout\WebApi\RedirectManagement" for="Worldline\HostedCheckout\Api\RedirectManagementInterface" />
+    <preference type="Worldline\HostedCheckout\Service\HostedCheckout\GetHostedCheckoutStatusService"
+                for="Worldline\HostedCheckout\Api\Service\HostedCheckout\GetHostedCheckoutStatusServiceInterface" />
+    <preference type="Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutService"
+                for="Worldline\HostedCheckout\Api\Service\HostedCheckout\CreateHostedCheckoutServiceInterface" />
 
     <type name="Worldline\HostedCheckout\WebApi\RedirectManagement">
         <arguments>
@@ -14,7 +18,7 @@
     <type name="Worldline\PaymentCore\Block\Customer\CardRenderer">
         <arguments>
             <argument name="paymentMethods" xsi:type="array">
-                <item name="worldline_hosted_checkout" xsi:type="const">Worldline\HostedCheckout\UI\ConfigProvider::HC_CODE</item>
+                <item name="worldline_hosted_checkout" xsi:type="const">Worldline\HostedCheckout\Ui\ConfigProvider::HC_CODE</item>
             </argument>
         </arguments>
     </type>
@@ -44,8 +48,8 @@
     <type name="Worldline\PaymentCore\Model\ResourceModel\PendingOrderProvider">
         <arguments>
             <argument name="allowedPaymentMethods" xsi:type="array">
-                <item name="worldline_hosted_checkout" xsi:type="const">Worldline\HostedCheckout\UI\ConfigProvider::HC_CODE</item>
-                <item name="worldline_hosted_checkout_vault" xsi:type="const">Worldline\HostedCheckout\UI\ConfigProvider::HC_VAULT_CODE</item>
+                <item name="worldline_hosted_checkout" xsi:type="const">Worldline\HostedCheckout\Ui\ConfigProvider::HC_CODE</item>
+                <item name="worldline_hosted_checkout_vault" xsi:type="const">Worldline\HostedCheckout\Ui\ConfigProvider::HC_VAULT_CODE</item>
             </argument>
         </arguments>
     </type>
@@ -54,12 +58,12 @@
 
     <type name="Worldline\HostedCheckout\Gateway\Config\Config">
         <arguments>
-            <argument name="methodCode" xsi:type="const">\Worldline\HostedCheckout\UI\ConfigProvider::HC_CODE</argument>
+            <argument name="methodCode" xsi:type="const">\Worldline\HostedCheckout\Ui\ConfigProvider::HC_CODE</argument>
         </arguments>
     </type>
     <virtualType name="Worldline\HostedCheckout\Model\Method\Adapter\Virtual" type="Magento\Payment\Model\Method\Adapter">
         <arguments>
-            <argument name="code" xsi:type="const">\Worldline\HostedCheckout\UI\ConfigProvider::HC_CODE</argument>
+            <argument name="code" xsi:type="const">\Worldline\HostedCheckout\Ui\ConfigProvider::HC_CODE</argument>
             <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
             <argument name="infoBlockType" xsi:type="string">Worldline\HostedCheckout\Block\Info\Virtual</argument>
             <argument name="valueHandlerPool" xsi:type="object">Worldline\HostedCheckout\Gateway\Config\ValueHandlerPool\Virtual</argument>
@@ -76,8 +80,8 @@
         <arguments>
             <argument name="handlers" xsi:type="array">
                 <item name="default" xsi:type="string">Worldline\HostedCheckout\Gateway\Config\ConfigValueHandler\Virtual</item>
-                <item name="can_void" xsi:type="string">Worldline\HostedCheckout\Gateway\Response\CanVoidHandler</item>
-                <item name="can_cancel" xsi:type="string">Worldline\HostedCheckout\Gateway\Response\CanVoidHandler</item>
+                <item name="can_void" xsi:type="string">Worldline\PaymentCore\Gateway\Config\CanVoidHandler</item>
+                <item name="can_cancel" xsi:type="string">Worldline\PaymentCore\Gateway\Config\CanVoidHandler</item>
             </argument>
         </arguments>
     </virtualType>
@@ -90,8 +94,13 @@
         <arguments>
             <argument name="validators" xsi:type="array">
                 <item name="country" xsi:type="string">Worldline\HostedCheckout\Gateway\Validator\CountryValidator\Virtual</item>
-                <item name="currency" xsi:type="string">Worldline\HostedCheckout\Gateway\Validator\CurrencyValidator</item>
+                <item name="currency" xsi:type="string">Worldline\HostedCheckout\Gateway\Validator\CurrencyValidator\Virtual</item>
             </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Worldline\HostedCheckout\Gateway\Validator\CurrencyValidator\Virtual" type="Worldline\PaymentCore\Gateway\Validator\CurrencyValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">Worldline\HostedCheckout\Gateway\Config\Config</argument>
         </arguments>
     </virtualType>
     <virtualType name="Worldline\HostedCheckout\Gateway\Validator\CountryValidator\Virtual" type="Magento\Payment\Gateway\Validator\CountryValidator">
@@ -118,7 +127,7 @@
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="Worldline\HostedCheckout\Gateway\Command\CaptureStrategyCommand\Virtual" type="Worldline\HostedCheckout\Gateway\Command\CaptureStrategyCommand">
+    <virtualType name="Worldline\HostedCheckout\Gateway\Command\CaptureStrategyCommand\Virtual" type="Worldline\PaymentCore\Gateway\Command\CaptureStrategyCommand">
         <arguments>
             <argument name="commandPool" xsi:type="object">Worldline\HostedCheckout\Gateway\Command\CommandPool\Virtual</argument>
         </arguments>
@@ -140,43 +149,33 @@
     <!-- Capture Command -->
     <virtualType name="Worldline\HostedCheckout\Gateway\Command\CaptureCommand\Virtual" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
-            <argument name="requestBuilder" xsi:type="object">Worldline\HostedCheckout\Gateway\Request\CaptureBuilder\Virtual</argument>
+            <argument name="requestBuilder" xsi:type="object">Worldline\PaymentCore\Gateway\Request\CaptureDataBuilder</argument>
             <argument name="transferFactory" xsi:type="object">Worldline\PaymentCore\Gateway\Http\TransferFactory</argument>
-            <argument name="client" xsi:type="object">Worldline\HostedCheckout\Gateway\Http\Client\TransactionSubmitForSettlement</argument>
+            <argument name="client" xsi:type="object">Worldline\PaymentCore\Gateway\Http\Client\TransactionCapture</argument>
             <argument name="handler" xsi:type="object">Worldline\HostedCheckout\Gateway\Response\TransactionIdHandler</argument>
-            <argument name="validator" xsi:type="object">Worldline\HostedCheckout\Gateway\Validator\GeneralResponseValidator</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Worldline\HostedCheckout\Gateway\Request\CaptureBuilder\Virtual" type="Magento\Payment\Gateway\Request\BuilderComposite">
-        <arguments>
-            <argument name="builders" xsi:type="array">
-                <item name="capture" xsi:type="string">Worldline\HostedCheckout\Gateway\Request\CaptureDataBuilder</item>
-            </argument>
+            <argument name="validator" xsi:type="object">Worldline\PaymentCore\Gateway\Validator\GeneralResponseValidator</argument>
         </arguments>
     </virtualType>
     <!-- END Capture Command -->
     <!-- Void Command -->
     <virtualType name="Worldline\HostedCheckout\Gateway\Command\VoidCommand\Virtual" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
-            <argument name="client" xsi:type="object">Worldline\HostedCheckout\Gateway\Http\Client\TransactionVoid</argument>
-            <argument name="requestBuilder" xsi:type="object">Worldline\HostedCheckout\Gateway\Request\VoidBuilder\Virtual</argument>
-            <argument name="handler" xsi:type="object">Worldline\HostedCheckout\Gateway\Response\VoidHandler</argument>
-            <argument name="validator" xsi:type="object">Worldline\HostedCheckout\Gateway\Validator\GeneralResponseValidator</argument>
+            <argument name="client" xsi:type="object">Worldline\PaymentCore\Gateway\Http\Client\TransactionVoid</argument>
+            <argument name="requestBuilder" xsi:type="object">Worldline\PaymentCore\Gateway\Request\VoidAndCancelDataBuilder</argument>
+            <argument name="handler" xsi:type="object">Worldline\PaymentCore\Gateway\Response\VoidHandler</argument>
+            <argument name="validator" xsi:type="object">Worldline\PaymentCore\Gateway\Validator\GeneralResponseValidator</argument>
             <argument name="transferFactory" xsi:type="object">Worldline\PaymentCore\Gateway\Http\TransferFactory</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Worldline\HostedCheckout\Gateway\Request\VoidBuilder\Virtual" type="Magento\Payment\Gateway\Request\BuilderComposite">
-        <arguments>
-            <argument name="builders" xsi:type="array">
-                <item name="void" xsi:type="string">Worldline\HostedCheckout\Gateway\Request\VoidDataBuilder</item>
-            </argument>
         </arguments>
     </virtualType>
     <!-- END Void Command -->
     <!-- Cancel Command -->
     <virtualType name="Worldline\HostedCheckout\Gateway\CancelCommand\Virtual" type="Worldline\HostedCheckout\Gateway\Command\VoidCommand\Virtual">
         <arguments>
-            <argument name="handler" xsi:type="object">Worldline\HostedCheckout\Gateway\Response\CancelDetailsHandler</argument>
+            <argument name="client" xsi:type="object">Worldline\PaymentCore\Gateway\Http\Client\TransactionCancel</argument>
+            <argument name="requestBuilder" xsi:type="object">Worldline\PaymentCore\Gateway\Request\VoidAndCancelDataBuilder</argument>
+            <argument name="validator" xsi:type="object">Worldline\PaymentCore\Gateway\Validator\GeneralResponseValidator</argument>
+            <argument name="transferFactory" xsi:type="object">Worldline\PaymentCore\Gateway\Http\TransferFactory</argument>
+            <argument name="handler" xsi:type="object">Worldline\PaymentCore\Gateway\Response\CancelDetailsHandler</argument>
         </arguments>
     </virtualType>
     <!-- END Cancel Command -->
@@ -211,18 +210,11 @@
     <!-- Refund Command -->
     <virtualType name="Worldline\HostedCheckout\Gateway\Command\RefundCommand\Virtual" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
-            <argument name="client" xsi:type="object">Worldline\HostedCheckout\Gateway\Http\Client\TransactionRefund</argument>
-            <argument name="requestBuilder" xsi:type="object">Worldline\HostedCheckout\Gateway\Request\RefundBuilder\Virtual</argument>
-            <argument name="validator" xsi:type="object">Worldline\HostedCheckout\Gateway\Validator\GeneralResponseValidator</argument>
-            <argument name="handler" xsi:type="object">Worldline\HostedCheckout\Gateway\Response\RefundHandler</argument>
+            <argument name="client" xsi:type="object">Worldline\PaymentCore\Gateway\Http\Client\TransactionRefund</argument>
+            <argument name="requestBuilder" xsi:type="object">Worldline\PaymentCore\Gateway\Request\RefundDataBuilder</argument>
+            <argument name="validator" xsi:type="object">Worldline\PaymentCore\Gateway\Validator\GeneralResponseValidator</argument>
+            <argument name="handler" xsi:type="object">Worldline\PaymentCore\Gateway\Response\RefundHandler</argument>
             <argument name="transferFactory" xsi:type="object">Worldline\PaymentCore\Gateway\Http\TransferFactory</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Worldline\HostedCheckout\Gateway\Request\RefundBuilder\Virtual" type="Magento\Payment\Gateway\Request\BuilderComposite">
-        <arguments>
-            <argument name="builders" xsi:type="array">
-                <item name="refund" xsi:type="string">Worldline\HostedCheckout\Gateway\Request\RefundDataBuilder</item>
-            </argument>
         </arguments>
     </virtualType>
     <!-- END Refund Command -->
@@ -275,20 +267,20 @@
             <argument name="config" xsi:type="object">Worldline\HostedCheckout\Gateway\Config\Config\Virtual</argument>
             <argument name="valueHandlerPool" xsi:type="object">Worldline\HostedCheckout\Gateway\Config\ValueHandlerPool\Vault\Virtual</argument>
             <argument name="vaultProvider" xsi:type="object">Worldline\HostedCheckout\Model\Method\Adapter\Virtual</argument>
-            <argument name="code" xsi:type="const">\Worldline\HostedCheckout\UI\ConfigProvider::HC_VAULT_CODE</argument>
+            <argument name="code" xsi:type="const">\Worldline\HostedCheckout\Ui\ConfigProvider::HC_VAULT_CODE</argument>
         </arguments>
     </virtualType>
     <!-- Default HC Vault Config Handler -->
     <virtualType name="Worldline\HostedCheckout\Gateway\Config\Config\Virtual" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
-            <argument name="methodCode" xsi:type="const">\Worldline\HostedCheckout\UI\ConfigProvider::HC_VAULT_CODE</argument>
+            <argument name="methodCode" xsi:type="const">\Worldline\HostedCheckout\Ui\ConfigProvider::HC_VAULT_CODE</argument>
         </arguments>
     </virtualType>
     <!-- END Default HC Vault Config Handler -->
     <!-- Custom HC Vault Config Handler -->
     <virtualType name="Worldline\HostedCheckout\Gateway\Config\CustomConfig\Virtual" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
-            <argument name="methodCode" xsi:type="const">\Worldline\HostedCheckout\UI\ConfigProvider::HC_CODE</argument>
+            <argument name="methodCode" xsi:type="const">\Worldline\HostedCheckout\Ui\ConfigProvider::HC_CODE</argument>
         </arguments>
     </virtualType>
     <!-- END Custom HC Vault Config Handler -->
@@ -315,7 +307,7 @@
     <!-- END VAULT configuration -->
 
     <!-- Logger -->
-    <type name="Worldline\HostedCheckout\Service\Creator\Request\Order\ShoppingCartDataDebugLogger">
+    <type name="Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order\ShoppingCartDataDebugLogger">
         <arguments>
             <argument name="logger" xsi:type="object">Worldline\HostedCheckout\Model\Method\Logger\Virtual</argument>
         </arguments>

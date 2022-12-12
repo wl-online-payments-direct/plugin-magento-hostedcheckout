@@ -31,7 +31,7 @@ class TransactionIdHandler implements HandlerInterface
      * @return void
      * @throws LocalizedException
      */
-    public function handle(array $handlingSubject, array $response)
+    public function handle(array $handlingSubject, array $response): void
     {
         $paymentDO = $this->subjectReader->readPayment($handlingSubject);
 
@@ -59,12 +59,7 @@ class TransactionIdHandler implements HandlerInterface
         }
     }
 
-    /**
-     * @param Payment $orderPayment
-     * @param DataObject $transaction
-     * @return void
-     */
-    protected function setTransactionId(Payment $orderPayment, DataObject $transaction)
+    protected function setTransactionId(Payment $orderPayment, DataObject $transaction): void
     {
         $orderPayment->setTransactionId($transaction->getId());
     }

@@ -17,10 +17,6 @@ class AmountResponseValidator extends AbstractValidator
      */
     private $subjectReader;
 
-    /**
-     * @param ResultInterfaceFactory $resultFactory
-     * @param SubjectReader $subjectReader
-     */
     public function __construct(
         ResultInterfaceFactory $resultFactory,
         SubjectReader $subjectReader
@@ -29,10 +25,6 @@ class AmountResponseValidator extends AbstractValidator
         $this->subjectReader = $subjectReader;
     }
 
-    /**
-     * @param array $validationSubject
-     * @return ResultInterface
-     */
     public function validate(array $validationSubject): ResultInterface
     {
         /** @var GetHostedCheckoutResponse $response */

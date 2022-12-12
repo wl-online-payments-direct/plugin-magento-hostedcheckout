@@ -6,7 +6,7 @@ namespace Worldline\HostedCheckout\Observer;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Worldline\HostedCheckout\Gateway\Config\Config;
-use Worldline\HostedCheckout\UI\ConfigProvider;
+use Worldline\HostedCheckout\Ui\ConfigProvider;
 use Worldline\PaymentCore\Model\AvailableMethodChecker;
 
 class PaymentMethodIsActive implements ObserverInterface

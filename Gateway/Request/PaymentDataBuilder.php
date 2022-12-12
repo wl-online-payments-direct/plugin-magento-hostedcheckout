@@ -10,8 +10,8 @@ use Worldline\PaymentCore\Gateway\SubjectReader;
 class PaymentDataBuilder implements BuilderInterface
 {
     public const AMOUNT = 'amount';
-    public const STORE_ID = 'store_id';
     public const HOSTED_CHECKOUT_ID = 'payment_id';
+    public const STORE_ID = 'store_id';
 
     /**
      * @var SubjectReader
