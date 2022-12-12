@@ -27,12 +27,14 @@ class ReplacePaymentAction
     }
 
     /**
+     * Change the payment action value for some WL payments
+     *
      * @param Adapter $subject
      * @param string|null $result
      * @return strings
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function afterGetConfigPaymentAction(Adapter $subject, $result = null): string
+    public function afterGetConfigPaymentAction(Adapter $subject, $result = null): ?string
     {
         if (!$payment = $this->orderPaymentContainer->getPayment()) {
             return $result;

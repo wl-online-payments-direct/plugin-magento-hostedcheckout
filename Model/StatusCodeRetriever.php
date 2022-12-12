@@ -5,7 +5,7 @@ namespace Worldline\HostedCheckout\Model;
 
 use Magento\Quote\Model\Quote\Payment;
 use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
-use Worldline\HostedCheckout\Service\Getter\Request as GetterRequest;
+use Worldline\HostedCheckout\Service\HostedCheckout\GetHostedCheckoutStatusService as GetterRequest;
 use Worldline\PaymentCore\Api\PaymentManagerInterface;
 use Worldline\PaymentCore\Api\TransactionWLResponseManagerInterface;
 use Worldline\PaymentCore\Model\PaymentStatusCode\StatusCodeRetrieverInterface;
@@ -46,7 +46,7 @@ class StatusCodeRetriever implements StatusCodeRetrieverInterface
         }
 
         $storeId = (int)$payment->getMethodInstance()->getStore();
-        $response = $this->getterRequest->create($hostedCheckoutId, $storeId);
+        $response = $this->getterRequest->execute($hostedCheckoutId, $storeId);
         $paymentResponse = $response->getCreatedPaymentOutput()->getPayment();
         if (!$paymentResponse) {
             return null;

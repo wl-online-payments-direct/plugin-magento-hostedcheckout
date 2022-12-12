@@ -8,12 +8,15 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
-use Worldline\HostedCheckout\Service\Getter\Request;
+use Worldline\HostedCheckout\Service\HostedCheckout\GetHostedCheckoutStatusService;
 use Worldline\PaymentCore\Api\Data\OrderStateInterfaceFactory;
 use Worldline\PaymentCore\Model\Order\RejectOrderException;
 use Worldline\PaymentCore\Model\OrderState;
 use Worldline\PaymentCore\Model\ResourceModel\Quote as QuoteResource;
 
+/**
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ */
 class ReturnRequestProcessor
 {
     public const SUCCESS_STATE = 'success';
@@ -33,7 +36,7 @@ class ReturnRequestProcessor
     private $logger;
 
     /**
-     * @var Request
+     * @var GetHostedCheckoutStatusService
      */
     private $getRequest;
 
@@ -65,7 +68,7 @@ class ReturnRequestProcessor
     public function __construct(
         Session $checkoutSession,
         LoggerInterface $logger,
-        Request $getRequest,
+        GetHostedCheckoutStatusService $getRequest,
         QuoteResource $quoteResource,
         OrderFactory $orderFactory,
         PaymentInfoCleaner $paymentInfoCleaner,
@@ -91,7 +94,7 @@ class ReturnRequestProcessor
         $quote = $this->quoteResource->getQuoteByWorldlinePaymentId($paymentId);
 
         try {
-            $request = $this->getRequest->create($paymentId, (int)$quote->getStoreId());
+            $request = $this->getRequest->execute($paymentId, (int)$quote->getStoreId());
         } catch (\Exception $e) {
             $this->logger->debug($e->getMessage());
             throw new LocalizedException(__('The payment has failed, please, try again'));
@@ -116,7 +119,6 @@ class ReturnRequestProcessor
         $order = $this->orderFactory->create()->loadByIncrementId($reservedOrderId);
         if (!$order->getId()) {
             $orderState->setState(self::WAITING_STATE);
-            $this->addressSaveProcessor->saveAddress($quote);
             $this->checkoutSession->clearStorage();
             $this->checkoutSession->setLastRealOrderId($reservedOrderId);
 

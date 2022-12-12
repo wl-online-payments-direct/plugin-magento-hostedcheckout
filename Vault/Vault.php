@@ -5,7 +5,6 @@ namespace Worldline\HostedCheckout\Vault;
 
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Payment\Gateway\Command;
 use Magento\Payment\Gateway\Config\ValueHandlerPoolInterface;
 use Magento\Payment\Gateway\ConfigFactoryInterface;
@@ -15,7 +14,7 @@ use Magento\Quote\Api\Data\CartInterface;
 use Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory;
 use Magento\Vault\Api\PaymentTokenManagementInterface;
 use Magento\Vault\Model\Method\Vault as MagentoVault;
-use Worldline\HostedCheckout\UI\ConfigProvider;
+use Worldline\HostedCheckout\Ui\ConfigProvider;
 use Worldline\PaymentCore\Model\VaultValidation;
 
 /**
@@ -40,8 +39,7 @@ class Vault extends MagentoVault
         PaymentTokenManagementInterface $tokenManagement,
         OrderPaymentExtensionInterfaceFactory $paymentExtensionFactory,
         VaultValidation $vaultValidation,
-        string $code,
-        Json $jsonSerializer = null
+        string $code
     ) {
         parent::__construct(
             $config,
@@ -53,8 +51,7 @@ class Vault extends MagentoVault
             $commandManagerPool,
             $tokenManagement,
             $paymentExtensionFactory,
-            $code,
-            $jsonSerializer
+            $code
         );
         $this->vaultValidation = $vaultValidation;
     }

@@ -66,7 +66,7 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="currency" translate="label" type="multiselect" sortOrder="80" showInDefault="1" canRestore="1">
+                <field id="currency" translate="label" type="multiselect" sortOrder="80" showInDefault="1" showInWebsite="1" canRestore="1">
                     <label>Payment from Specific Currencies</label>
                     <source_model>Magento\Config\Model\Config\Source\Locale\Currency\All</source_model>
                     <validate>required-entry</validate>
@@ -182,6 +182,15 @@
                     <config_path>payment/worldline_hosted_checkout/skip_3d</config_path>
                     <depends>
                         <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="authentication_trigger" translate="label" type="select" sortOrder="230" showInDefault="1" showInWebsite="1">
+                    <label>Trigger an authentication for every payment</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/worldline_hosted_checkout/authentication_trigger</config_path>
+                    <depends>
+                        <field id="active">1</field>
+                        <field id="skip_3d">0</field>
                     </depends>
                 </field>
                 <!-- @TODO: The settings are commented on purpose for now, they will back after unblocking -->

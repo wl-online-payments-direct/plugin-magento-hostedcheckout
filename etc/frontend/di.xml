@@ -4,7 +4,7 @@
     <type name="Magento\Checkout\Model\CompositeConfigProvider">
         <arguments>
             <argument name="configProviders" xsi:type="array">
-                <item name="worldline_hosted_checkout_config_provider" xsi:type="object">Worldline\HostedCheckout\UI\ConfigProvider</item>
+                <item name="worldline_hosted_checkout_config_provider" xsi:type="object">Worldline\HostedCheckout\Ui\ConfigProvider</item>
             </argument>
         </arguments>
     </type>
@@ -12,7 +12,7 @@
     <type name="Magento\Vault\Model\Ui\TokensConfigProvider">
         <arguments>
             <argument name="tokenUiComponentProviders" xsi:type="array">
-                <item name="worldline_hosted_checkout" xsi:type="object">Worldline\HostedCheckout\UI\TokenUiComponentProvider</item>
+                <item name="worldline_hosted_checkout" xsi:type="object">Worldline\HostedCheckout\Ui\TokenUiComponentProvider</item>
             </argument>
         </arguments>
     </type>
@@ -22,7 +22,7 @@
             <argument name="addressSaveProcessor" xsi:type="object">Worldline\HostedCheckout\Model\AddressSaveProcessor\Proxy</argument>
         </arguments>
     </type>
-    <type name="Worldline\HostedCheckout\Plugin\Checkout\Controller\Cart\Index">
+    <type name="Worldline\HostedCheckout\Plugin\Checkout\Controller\Cart\Index\SaveAddress">
         <arguments>
             <argument name="addressSaveProcessor" xsi:type="object">Worldline\HostedCheckout\Model\AddressSaveProcessor\Proxy</argument>
         </arguments>
@@ -31,6 +31,6 @@
     <type name="Magento\Checkout\Controller\Index\Index">
         <plugin sortOrder="100"
                 name="Worldline_HostedCheckout::SaveAddresses"
-                type="Worldline\HostedCheckout\Plugin\Checkout\Controller\Cart\Index"/>
+                type="Worldline\HostedCheckout\Plugin\Checkout\Controller\Cart\Index\SaveAddress"/>
     </type>
 </config>
