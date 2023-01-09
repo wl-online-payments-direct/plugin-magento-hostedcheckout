@@ -7,6 +7,8 @@ namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Locale\Resolver;
 use Magento\Quote\Api\Data\CartInterface;
+use OnlinePayments\Sdk\Domain\CardPaymentMethodSpecificInputForHostedCheckout;
+use OnlinePayments\Sdk\Domain\CardPaymentMethodSpecificInputForHostedCheckoutFactory;
 use OnlinePayments\Sdk\Domain\HostedCheckoutSpecificInput;
 use OnlinePayments\Sdk\Domain\HostedCheckoutSpecificInputFactory;
 use Worldline\HostedCheckout\Gateway\Config\Config;
@@ -36,23 +38,36 @@ class SpecificInputDataBuilder
      */
     private $hostedCheckoutSpecificInputFactory;
 
+    /**
+     * @var CardPaymentMethodSpecificInputForHostedCheckoutFactory
+     */
+    private $cardPaymentMethodDataFactory;
+
     public function __construct(
         Config $config,
         Resolver $store,
         ManagerInterface $eventManager,
-        HostedCheckoutSpecificInputFactory $hostedCheckoutSpecificInputFactory
+        HostedCheckoutSpecificInputFactory $hostedCheckoutSpecificInputFactory,
+        CardPaymentMethodSpecificInputForHostedCheckoutFactory $cardPaymentMethodDataFactory
     ) {
         $this->config = $config;
         $this->store = $store;
         $this->eventManager = $eventManager;
         $this->hostedCheckoutSpecificInputFactory = $hostedCheckoutSpecificInputFactory;
+        $this->cardPaymentMethodDataFactory = $cardPaymentMethodDataFactory;
     }
 
     public function build(CartInterface $quote): HostedCheckoutSpecificInput
     {
+        /** @var HostedCheckoutSpecificInput $hostedCheckoutSpecificInput */
         $hostedCheckoutSpecificInput = $this->hostedCheckoutSpecificInputFactory->create();
         $hostedCheckoutSpecificInput->setLocale($this->store->getLocale());
         $storeId = (int)$quote->getStoreId();
+
+        /** @var CardPaymentMethodSpecificInputForHostedCheckout $cardPaymentMethodSpecificInputForHC */
+        $cardPaymentMethodSpecificInputForHC = $this->cardPaymentMethodDataFactory->create();
+        $cardPaymentMethodSpecificInputForHC->setGroupCards($this->config->isGroupCardsEnabled($storeId));
+        $hostedCheckoutSpecificInput->setCardPaymentMethodSpecificInput($cardPaymentMethodSpecificInputForHC);
 
         $hostedCheckoutSpecificInput->setReturnUrl($this->config->getReturnUrl($storeId));
         if ($variant = $this->config->getTemplateId($storeId)) {

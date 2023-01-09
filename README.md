@@ -4,6 +4,12 @@
 
 Change log:
 
+1.5.0
+- Add "groupCards" functionality (for hosted checkout) : group all card under one single payment button.
+- Improve Worldline payment box design: split in payment and fraud results.
+- Add a feature to request 3DS exemption for transactions below 30 EUR.
+- General code improvements and bug fixes.
+
 1.4.0
 - Option added to enforce Strong Customer Authentication for every 3DS request
 - Improvements and support for 2.3.x magento versions

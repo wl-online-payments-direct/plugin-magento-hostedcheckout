@@ -184,13 +184,33 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="authentication_trigger" translate="label" type="select" sortOrder="230" showInDefault="1" showInWebsite="1">
-                    <label>Trigger an authentication for every payment</label>
+                <field id="authentication_trigger" translate="label tooltip" type="select" sortOrder="230" showInDefault="1" showInWebsite="1">
+                    <label>Trigger an Authentication for Every Payment</label>
+                    <tooltip>Enabling this option will make sure the customer performs a “Strong Customer Authentication” and hence enforces a “challenge” 3DS flow.</tooltip>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>payment/worldline_hosted_checkout/authentication_trigger</config_path>
                     <depends>
                         <field id="active">1</field>
                         <field id="skip_3d">0</field>
+                    </depends>
+                </field>
+                <field id="3d_exemption" translate="label tooltip" type="select" sortOrder="240" showInDefault="1" showInWebsite="1">
+                    <label>Request 3DS Exemption</label>
+                    <tooltip>If the setting is enabled and the sum of the order is below 30 euros, the customer won’t be asked to go through 3DS auth.</tooltip>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/worldline_hosted_checkout/3d_exemption</config_path>
+                    <depends>
+                        <field id="active">1</field>
+                        <field id="skip_3d">0</field>
+                    </depends>
+                </field>
+                <field id="enable_group_cards" translate="label comment" type="select" sortOrder="250" showInDefault="1" showInWebsite="1">
+                    <label>Group Cards</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/worldline_hosted_checkout/enable_group_cards</config_path>
+                    <comment><![CDATA[Group credit and debit cards under one single button on the checkout page]]></comment>
+                    <depends>
+                        <field id="active">1</field>
                     </depends>
                 </field>
                 <!-- @TODO: The settings are commented on purpose for now, they will back after unblocking -->

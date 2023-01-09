@@ -9,9 +9,9 @@ use Worldline\HostedCheckout\Model\Config\PaymentActionReplaceHandlerInterface;
 use Worldline\PaymentCore\Api\Data\PaymentProductsDetailsInterface;
 use Worldline\PaymentCore\Api\PaymentRepositoryInterface;
 
-class BancontactHandler implements PaymentActionReplaceHandlerInterface
+class IntersolveHandler implements PaymentActionReplaceHandlerInterface
 {
-    private const BANCONTACT_PAYMENT_ACTION = 'authorize_capture';
+    private const PAYMENT_ACTION = 'authorize_capture';
 
     /**
      * @var PaymentRepositoryInterface
@@ -30,7 +30,7 @@ class BancontactHandler implements PaymentActionReplaceHandlerInterface
         $worldlinePayment = $this->paymentRepository->get($incrementId);
         $paymentProductId = (int) $worldlinePayment->getPaymentProductId();
 
-        return PaymentProductsDetailsInterface::BANCONTACT_PRODUCT_ID === $paymentProductId
-            ? self::BANCONTACT_PAYMENT_ACTION : null;
+        return PaymentProductsDetailsInterface::INTERSOLVE_PRODUCT_ID === $paymentProductId
+            ? self::PAYMENT_ACTION : null;
     }
 }

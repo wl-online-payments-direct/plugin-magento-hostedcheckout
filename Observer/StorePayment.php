@@ -21,15 +21,21 @@ class StorePayment implements ObserverInterface
      */
     private $orderPaymentContainer;
 
-    public function __construct(OrderPaymentContainer $orderPaymentStorage)
+    /**
+     * @var string[]
+     */
+    private $paymentMethods;
+
+    public function __construct(OrderPaymentContainer $orderPaymentStorage, array $paymentMethods = [])
     {
         $this->orderPaymentContainer = $orderPaymentStorage;
+        $this->paymentMethods = $paymentMethods;
     }
 
     public function execute(Observer $observer): void
     {
         if ($observer->getPayment() instanceof OrderPaymentInterface
-            && $observer->getPayment()->getMethod() === ConfigProvider::HC_CODE) {
+            && in_array($observer->getPayment()->getMethod(), $this->paymentMethods)) {
             $this->orderPaymentContainer->setPayment($observer->getPayment());
         }
     }
