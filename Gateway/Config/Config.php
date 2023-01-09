@@ -25,6 +25,8 @@ class Config extends PaymentGatewayConfig
     public const KEY_CART_LINES = 'cart_lines';
     public const SKIP_3D = 'skip_3d';
     public const AUTHENTICATION_TRIGGER = 'authentication_trigger';
+    public const ENABLE_GROUP_CARDS = 'enable_group_cards';
+    public const THREE_D_EXEMPTION = '3d_exemption';
 
     public const DIRECT_DEBIT_RECURRENCE_TYPE = 'direct_debit_recurrence_type';
     public const DIRECT_DEBIT_SIGNATURE_TYPE = 'direct_debit_signature_type';
@@ -106,6 +108,11 @@ class Config extends PaymentGatewayConfig
         return (bool) $this->getValue(self::AUTHENTICATION_TRIGGER, $storeId);
     }
 
+    public function isThreeDExemptionEnabled(?int $storeId = null): bool
+    {
+        return (bool) $this->getValue(self::THREE_D_EXEMPTION, $storeId);
+    }
+
     public function getDirectDebitRecurrenceType(?int $storeId = null): string
     {
         return (string) $this->getValue(self::DIRECT_DEBIT_RECURRENCE_TYPE, $storeId);
@@ -114,5 +121,10 @@ class Config extends PaymentGatewayConfig
     public function getDirectDebitSignatureType(?int $storeId = null): string
     {
         return (string) $this->getValue(self::DIRECT_DEBIT_SIGNATURE_TYPE, $storeId);
+    }
+
+    public function isGroupCardsEnabled(?int $storeId = null): bool
+    {
+        return (bool) $this->getValue(self::ENABLE_GROUP_CARDS, $storeId);
     }
 }
