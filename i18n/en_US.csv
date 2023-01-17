@@ -38,6 +38,18 @@ Sort,Sort
 "Custom Return URL","Custom Return URL"
 "Should be set only if you use PWA Studio or any other 3rd party frontend.","Should be set only if you use PWA Studio or any other 3rd party frontend."
 "Submit Customer Cart Items Data to Worldline","Submit Customer Cart Items Data to Worldline"
+"Process Mealvouchers","Process Mealvouchers"
+"By enabling mealvouchers, you will be able to configure your products as
+                        Food and Drink, Home and Garden, or Gift and Flowers.
+                        Simply note that the Worldline platform only allows one type of products per basket,
+                        and the plugin will automatically update the products of the basket that are missing a product
+                        type to the value recognized in the basket;
+                        in case of a mixed basket all products will be set to Food and Drink","By enabling mealvouchers, you will be able to configure your products as
+                        Food and Drink, Home and Garden, or Gift and Flowers.
+                        Simply note that the Worldline platform only allows one type of products per basket,
+                        and the plugin will automatically update the products of the basket that are missing a product
+                        type to the value recognized in the basket;
+                        in case of a mixed basket all products will be set to Food and Drink"
 "Skip 3DSecure Authentication","Skip 3DSecure Authentication"
 "This option should not be turned off if the merchant is based in a EU country","This option should not be turned off if the merchant is based in a EU country"
 "Trigger an Authentication for Every Payment","Trigger an Authentication for Every Payment"

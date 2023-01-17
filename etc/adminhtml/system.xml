@@ -175,6 +175,21 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
+                <field id="process_mealvouchers" translate="label tooltip" type="select" sortOrder="210" showInDefault="1" showInWebsite="1">
+                    <label>Process Mealvouchers</label>
+                    <tooltip><![CDATA[By enabling mealvouchers, you will be able to configure your products as
+                        Food and Drink, Home and Garden, or Gift and Flowers.
+                        Simply note that the Worldline platform only allows one type of products per basket,
+                        and the plugin will automatically update the products of the basket that are missing a product
+                        type to the value recognized in the basket;
+                        in case of a mixed basket all products will be set to Food and Drink]]></tooltip>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/worldline_hosted_checkout/process_mealvouchers</config_path>
+                    <depends>
+                        <field id="active">1</field>
+                        <field id="cart_lines">1</field>
+                    </depends>
+                </field>
                 <field id="skip_3d" translate="label tooltip" type="select" sortOrder="220" showInDefault="1" showInWebsite="1">
                     <label>Skip 3DSecure Authentication</label>
                     <tooltip>This option should not be turned off if the merchant is based in a EU country</tooltip>
