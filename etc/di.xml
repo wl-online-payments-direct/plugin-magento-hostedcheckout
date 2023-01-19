@@ -100,7 +100,7 @@
             <argument name="handlers" xsi:type="array">
                 <item name="default" xsi:type="string">Worldline\HostedCheckout\Gateway\Config\ConfigValueHandler\Virtual</item>
                 <item name="can_void" xsi:type="string">Worldline\PaymentCore\Gateway\Config\CanVoidHandler</item>
-                <item name="can_cancel" xsi:type="string">Worldline\PaymentCore\Gateway\Config\CanVoidHandler</item>
+                <item name="can_cancel" xsi:type="string">Worldline\PaymentCore\Gateway\Config\CanCancelHandler</item>
             </argument>
         </arguments>
     </virtualType>
@@ -181,7 +181,7 @@
         <arguments>
             <argument name="client" xsi:type="object">Worldline\PaymentCore\Gateway\Http\Client\TransactionVoid</argument>
             <argument name="requestBuilder" xsi:type="object">Worldline\PaymentCore\Gateway\Request\VoidAndCancelDataBuilder</argument>
-            <argument name="handler" xsi:type="object">Worldline\PaymentCore\Gateway\Response\VoidHandler</argument>
+            <argument name="handler" xsi:type="object">Worldline\PaymentCore\Gateway\Response\CancelAndVoidHandler</argument>
             <argument name="validator" xsi:type="object">Worldline\PaymentCore\Gateway\Validator\GeneralResponseValidator</argument>
             <argument name="transferFactory" xsi:type="object">Worldline\PaymentCore\Gateway\Http\TransferFactory</argument>
         </arguments>
@@ -194,7 +194,6 @@
             <argument name="requestBuilder" xsi:type="object">Worldline\PaymentCore\Gateway\Request\VoidAndCancelDataBuilder</argument>
             <argument name="validator" xsi:type="object">Worldline\PaymentCore\Gateway\Validator\GeneralResponseValidator</argument>
             <argument name="transferFactory" xsi:type="object">Worldline\PaymentCore\Gateway\Http\TransferFactory</argument>
-            <argument name="handler" xsi:type="object">Worldline\PaymentCore\Gateway\Response\CancelDetailsHandler</argument>
         </arguments>
     </virtualType>
     <!-- END Cancel Command -->

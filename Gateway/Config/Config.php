@@ -27,6 +27,7 @@ class Config extends PaymentGatewayConfig
     public const AUTHENTICATION_TRIGGER = 'authentication_trigger';
     public const ENABLE_GROUP_CARDS = 'enable_group_cards';
     public const THREE_D_EXEMPTION = '3d_exemption';
+    public const PROCESS_MEALVOUCHERS = 'process_mealvouchers';
 
     public const DIRECT_DEBIT_RECURRENCE_TYPE = 'direct_debit_recurrence_type';
     public const DIRECT_DEBIT_SIGNATURE_TYPE = 'direct_debit_signature_type';
@@ -126,5 +127,10 @@ class Config extends PaymentGatewayConfig
     public function isGroupCardsEnabled(?int $storeId = null): bool
     {
         return (bool) $this->getValue(self::ENABLE_GROUP_CARDS, $storeId);
+    }
+
+    public function isProcessMealvouchers(?int $storeId = null): bool
+    {
+        return (bool) $this->getValue(self::PROCESS_MEALVOUCHERS, $storeId);
     }
 }

@@ -18,6 +18,7 @@ use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
 use Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutRequestBuilder;
 use Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutService;
 use Worldline\PaymentCore\Model\DataAssigner\DataAssignerInterface;
+use Worldline\PaymentCore\Api\QuoteRestorationInterface;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -59,6 +60,11 @@ class RedirectManagement implements RedirectManagementInterface
      */
     private $paymentInformationManagement;
 
+    /**
+     * @var QuoteRestorationInterface
+     */
+    private $quoteRestoration;
+
     public function __construct(
         CartRepositoryInterface $cartRepository,
         CreateHostedCheckoutService $createRequest,
@@ -66,6 +72,7 @@ class RedirectManagement implements RedirectManagementInterface
         QuoteIdMaskFactory $quoteIdMaskFactory,
         RequestInterface $request,
         PaymentInformationManagementInterface $paymentInformationManagement,
+        QuoteRestorationInterface $quoteRestoration,
         array $dataAssignerPool = []
     ) {
         $this->cartRepository = $cartRepository;
@@ -73,8 +80,9 @@ class RedirectManagement implements RedirectManagementInterface
         $this->createRequestBuilder = $createRequestBuilder;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->request = $request;
-        $this->dataAssignerPool = $dataAssignerPool;
         $this->paymentInformationManagement = $paymentInformationManagement;
+        $this->quoteRestoration = $quoteRestoration;
+        $this->dataAssignerPool = $dataAssignerPool;
     }
 
     /**
@@ -147,7 +155,8 @@ class RedirectManagement implements RedirectManagementInterface
         $response = $this->createRequest->execute($request, (int)$quote->getStoreId());
         $payment->setAdditionalInformation('return_id', $response->getRETURNMAC());
         $payment->setAdditionalInformation(PaymentDataBuilder::HOSTED_CHECKOUT_ID, $response->getHostedCheckoutId());
-
+        $quote->setIsActive(false);
+        $this->quoteRestoration->preserveQuoteId((int)$quote->getId());
         $this->cartRepository->save($quote);
 
         return $response->getRedirectUrl();

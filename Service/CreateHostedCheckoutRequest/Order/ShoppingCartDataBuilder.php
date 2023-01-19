@@ -13,6 +13,7 @@ use OnlinePayments\Sdk\Domain\LineItemFactory;
 use OnlinePayments\Sdk\Domain\OrderLineDetailsFactory;
 use OnlinePayments\Sdk\Domain\ShoppingCart;
 use OnlinePayments\Sdk\Domain\ShoppingCartFactory;
+use Worldline\HostedCheckout\Model\Config\Source\MealvouchersProductTypes;
 
 class ShoppingCartDataBuilder
 {
@@ -101,6 +102,10 @@ class ShoppingCartDataBuilder
         ));
         $orderLineDetails->setProductCode($item->getSku());
         $orderLineDetails->setProductName($item->getName());
+        $mealvouchersProductType = $item->getData(MealvouchersProductTypes::MEALVOUCHERS_ATTRIBUTE_CODE);
+        if ($mealvouchersProductType && $mealvouchersProductType !== MealvouchersProductTypes::NO) {
+            $orderLineDetails->setProductType($mealvouchersProductType);
+        }
 
         $compensation = $this->preparePrice($item->getDiscountTaxCompensationAmount() / $item->getQty());
         $orderLineDetails->setProductPrice($this->preparePrice((float) $item->getPrice()) + $compensation);
@@ -139,6 +144,10 @@ class ShoppingCartDataBuilder
         $orderLineDetails->setProductName(__('Shipping'));
         $orderLineDetails->setQuantity(1);
         $orderLineDetails->setProductPrice($shippingAmount);
+        $mealvouchersProductType = $quote->getData(MealvouchersProductTypes::MEALVOUCHERS_ATTRIBUTE_CODE);
+        if ($mealvouchersProductType && $mealvouchersProductType !== MealvouchersProductTypes::NO) {
+            $orderLineDetails->setProductType($mealvouchersProductType);
+        }
         $lineItem->setOrderLineDetails($orderLineDetails);
 
         $this->lineItems[] = $lineItem;
