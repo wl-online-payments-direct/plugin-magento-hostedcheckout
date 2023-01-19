@@ -8,6 +8,7 @@ use Magento\Payment\Gateway\Config\Config;
 use Magento\Quote\Api\Data\CartInterface;
 use OnlinePayments\Sdk\Domain\Order;
 use OnlinePayments\Sdk\Domain\OrderFactory;
+use Worldline\HostedCheckout\Model\MealvouchersProductTypeBuilder;
 use Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order\ShoppingCartDataBuilder;
 use Worldline\PaymentCore\Model\MethodNameExtractor;
 use Worldline\PaymentCore\Service\CreateRequest\Order\AmountDataBuilder;
@@ -53,6 +54,11 @@ class OrderDataBuilder
     private $shoppingCartDataBuilder;
 
     /**
+     * @var MealvouchersProductTypeBuilder
+     */
+    private $mealvouchersProductTypeBuilder;
+
+    /**
      * @var Config[]
      */
     private $configProviders;
@@ -65,6 +71,7 @@ class OrderDataBuilder
         ReferenceDataBuilder $referenceDataBuilder,
         ShippingAddressDataBuilder $shippingAddressDataBuilder,
         ShoppingCartDataBuilder $shoppingCartDataBuilder,
+        MealvouchersProductTypeBuilder $mealvouchersProductTypeBuilder,
         array $configProviders = []
     ) {
         $this->orderFactory = $orderFactory;
@@ -74,11 +81,13 @@ class OrderDataBuilder
         $this->referenceDataBuilder = $referenceDataBuilder;
         $this->shippingAddressDataBuilder = $shippingAddressDataBuilder;
         $this->shoppingCartDataBuilder = $shoppingCartDataBuilder;
+        $this->mealvouchersProductTypeBuilder = $mealvouchersProductTypeBuilder;
         $this->configProviders = $configProviders;
     }
 
     public function build(CartInterface $quote): Order
     {
+        $storeId = (int)$quote->getStoreId();
         $order = $this->orderFactory->create();
 
         $order->setAmountOfMoney($this->amountDataBuilder->build($quote));
@@ -89,8 +98,12 @@ class OrderDataBuilder
         $methodCode = $this->methodNameExtractor->extract($quote->getPayment());
         $config = $this->configProviders[$methodCode] ?? null;
 
-        if (!$config instanceof Config || !$config->isCartLines((int)$quote->getStoreId())) {
+        if (!$config instanceof Config || !$config->isCartLines($storeId)) {
             return $order;
+        }
+
+        if ($config->isProcessMealvouchers($storeId)) {
+            $this->mealvouchersProductTypeBuilder->shapeMealvouchersProductType($quote);
         }
 
         if ($cart = $this->shoppingCartDataBuilder->build($quote)) {
