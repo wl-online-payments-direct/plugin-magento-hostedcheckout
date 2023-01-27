@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.6.1
+- Rise core version
+
 #### 1.6.0
 - Add the "Mealvouchers" payment method.
 - Improve cancel and void actions logic.
