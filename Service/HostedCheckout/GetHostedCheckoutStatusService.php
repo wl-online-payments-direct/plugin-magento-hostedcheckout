@@ -1,11 +1,11 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Service\HostedCheckout;
 
 use Magento\Framework\Exception\LocalizedException;
 use OnlinePayments\Sdk\Domain\GetHostedCheckoutResponse;
+use Psr\Log\LoggerInterface;
 use Worldline\HostedCheckout\Api\Service\HostedCheckout\GetHostedCheckoutStatusServiceInterface;
 use Worldline\PaymentCore\Model\ClientProvider;
 use Worldline\PaymentCore\Model\Config\WorldlineConfig;
@@ -26,16 +26,23 @@ class GetHostedCheckoutStatusService implements GetHostedCheckoutStatusServiceIn
     private $worldlineConfig;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @var array
      */
     private $cachedRequests = [];
 
     public function __construct(
         ClientProvider $clientProvider,
-        WorldlineConfig $worldlineConfig
+        WorldlineConfig $worldlineConfig,
+        LoggerInterface $logger
     ) {
         $this->clientProvider = $clientProvider;
         $this->worldlineConfig = $worldlineConfig;
+        $this->logger = $logger;
     }
 
     /**
@@ -60,6 +67,7 @@ class GetHostedCheckoutStatusService implements GetHostedCheckoutStatusServiceIn
 
             return $this->cachedRequests[$hostedCheckoutId];
         } catch (\Exception $e) {
+            $this->logger->debug($e->getMessage());
             throw new LocalizedException(__('GetHostedCheckoutApi request has failed. Please contact the provider.'));
         }
     }

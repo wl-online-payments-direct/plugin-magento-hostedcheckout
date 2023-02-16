@@ -9,7 +9,7 @@ This is a module for the hosted checkout Worldline payment solution.
 
 To install this solution, you may use
 [adobe commerce marketplace](https://marketplace.magento.com/worldline-module-magento-payment.html)
-or install it from the github.
+or install it from the GitHub.
 
 This solution is also included into:
 - [main plugin for adobe commerce](https://github.com/wl-online-payments-direct/plugin-magento)
@@ -17,8 +17,16 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.7.0
+- Add Multibanco payment method.
+- Add price restrictions for currencies having specific decimals rules (like JPY).
+- Move 3-D Secure settings to the general tab.
+- Change names and tooltips of the 3-D Secure settings.
+- Add integration tests.
+- General code improvements and bug fixes.
+
 #### 1.6.1
-- Rise core version
+- Rise core version.
 
 #### 1.6.0
 - Add the "Mealvouchers" payment method.
@@ -34,30 +42,30 @@ This solution is also included into:
 - General code improvements and bug fixes.
 
 #### 1.4.0
-- Option added to enforce Strong Customer Authentication for every 3DS request
-- Improvements and support for 2.3.x magento versions
-- General code improvements and bug fix
+- Option added to enforce Strong Customer Authentication for every 3DS request.
+- Improvements and support for 2.3.x magento versions.
+- General code improvements and bug fix.
 
 #### 1.3.1
-- Improve work for multi website instances
+- Improve work for multi website instances.
 
 #### 1.3.0
-- Improve the "waiting" page
-- Add the "pending" page
+- Improve the "waiting" page.
+- Add the "pending" page.
 
 #### 1.2.0
-- General improvements and bug fixes
+- General improvements and bug fixes.
 
 #### 1.1.1
-- PWA improvements and support
-- General code improvements
+- PWA improvements and support.
+- General code improvements.
 
 #### 1.1.0
-- Waiting page has been added after payment is done to correctly process webhooks and create the order
-- Asyncronic order creation through get calls when webhooks suffer delay
-- Refund flow is improved for multi-website instances
-- Bancontact payment method implementation has been improved
-- General improvements and bug fixes
+- Waiting page has been added after payment is done to correctly process webhooks and create the order.
+- Asyncronic order creation through get calls when webhooks suffer delay.
+- Refund flow is improved for multi-website instances.
+- Bancontact payment method implementation has been improved.
+- General improvements and bug fixes.
 
 #### 1.0.0
-- Initial MVP version 
+- Initial MVP version.

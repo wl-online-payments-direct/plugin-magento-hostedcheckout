@@ -8,12 +8,19 @@
 
     <type name="Worldline\HostedCheckout\WebApi\RedirectManagement">
         <arguments>
+            <argument name="baseCreatePaymentManagement" xsi:type="object">Worldline\HostedCheckout\WebApi\Checkout\BaseCreatePaymentManagement</argument>
+        </arguments>
+    </type>
+    <virtualType name="Worldline\HostedCheckout\WebApi\Checkout\BaseCreatePaymentManagement" type="Worldline\PaymentCore\WebApi\Checkout\BaseCreatePaymentManagement">
+        <arguments>
             <argument name="dataAssignerPool" xsi:type="array">
                 <item name="device-data" xsi:type="object">Worldline\PaymentCore\Model\DataAssigner\DeviceDataAssigner</item>
                 <item name="payment-data" xsi:type="object">Worldline\HostedCheckout\WebApi\RedirectManagement\PaymentMethodDataAssigner</item>
+                <item name="token-data" xsi:type="object">Worldline\PaymentCore\Model\DataAssigner\TokenDataAssigner</item>
+                <item name="create-payment-data" xsi:type="object">Worldline\HostedCheckout\WebApi\RedirectManagement\CreatePaymentDataAssigner</item>
             </argument>
         </arguments>
-    </type>
+    </virtualType>
 
     <type name="Worldline\PaymentCore\Block\Customer\CardRenderer">
         <arguments>
@@ -25,10 +32,15 @@
 
     <type name="Magento\Payment\Model\Method\Adapter">
         <plugin name="Worldline_HostedCheckout::replace_payment_action"
-                type="Worldline\HostedCheckout\Plugin\Payment\Model\Method\Adapter\ReplacePaymentAction"/>
+                type="Worldline\HostedCheckout\Plugin\Magento\Payment\Model\Method\Adapter\ReplacePaymentAction"/>
     </type>
 
-    <type name="Worldline\HostedCheckout\Plugin\Payment\Model\Method\Adapter\ReplacePaymentAction">
+    <type name="Worldline\PaymentCore\ViewModel\PendingPaymentPageDataProvider">
+        <plugin name="Worldline_HostedCheckout::change_message_postfix"
+                type="Worldline\HostedCheckout\Plugin\Worldline\PaymentCore\ViewModel\PendingPaymentPageDataProvider\ChangeMessagePostfix"/>
+    </type>
+
+    <type name="Worldline\HostedCheckout\Plugin\Magento\Payment\Model\Method\Adapter\ReplacePaymentAction">
         <arguments>
             <argument name="handlers" xsi:type="array">
                 <item name="bancontact" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\BancontactHandler\Proxy</item>
@@ -66,9 +78,9 @@
 
     <type name="Worldline\PaymentCore\Service\CreateRequest\ThreeDSecureDataBuilder">
         <arguments>
-            <argument name="configProviders" xsi:type="array">
-                <item name="worldline_hosted_checkout" xsi:type="object">Worldline\HostedCheckout\Gateway\Config\Config</item>
-                <item name="worldline_hosted_checkout_vault" xsi:type="object">Worldline\HostedCheckout\Gateway\Config\Config</item>
+            <argument name="returnUrls" xsi:type="array">
+                <item name="worldline_hosted_checkout" xsi:type="string">wl_hostedcheckout/returns/returnUrl</item>
+                <item name="worldline_hosted_checkout_vault" xsi:type="string">wl_hostedcheckout/returns/returnUrl</item>
             </argument>
         </arguments>
     </type>

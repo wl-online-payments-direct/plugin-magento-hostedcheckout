@@ -1,19 +1,12 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order;
 
-use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Quote\Api\Data\CartInterface;
-use Magento\Quote\Api\Data\CartItemInterface;
-use OnlinePayments\Sdk\Domain\AmountOfMoneyFactory;
-use OnlinePayments\Sdk\Domain\LineItem;
-use OnlinePayments\Sdk\Domain\LineItemFactory;
-use OnlinePayments\Sdk\Domain\OrderLineDetailsFactory;
 use OnlinePayments\Sdk\Domain\ShoppingCart;
 use OnlinePayments\Sdk\Domain\ShoppingCartFactory;
-use Worldline\HostedCheckout\Model\Config\Source\MealvouchersProductTypes;
+use Worldline\PaymentCore\Api\AmountFormatterInterface;
 
 class ShoppingCartDataBuilder
 {
@@ -23,64 +16,59 @@ class ShoppingCartDataBuilder
     private $shoppingCartFactory;
 
     /**
-     * @var LineItemFactory
-     */
-    private $lineItemFactory;
-
-    /**
-     * @var AmountOfMoneyFactory
-     */
-    private $amountOfMoneyFactory;
-
-    /**
-     * @var OrderLineDetailsFactory
-     */
-    private $orderLineDetailsFactory;
-
-    /**
-     * @var LineItem[]
-     */
-    private $lineItems = [];
-
-    /**
-     * @var float|int
-     */
-    private $cartTotal = 0;
-
-    /**
      * @var ShoppingCartDataDebugLogger
      */
     private $shoppingCartDataDebugLogger;
 
+    /**
+     * @var AmountFormatterInterface
+     */
+    private $amountFormatter;
+
+    /**
+     * @var LineItemBuilder
+     */
+    private $lineItemBuilder;
+
+    /**
+     * @var ShippingLineItemBuilder
+     */
+    private $shippingLineItemBuilder;
+
     public function __construct(
         ShoppingCartFactory $shoppingCartFactory,
-        LineItemFactory $lineItemFactory,
-        AmountOfMoneyFactory $amountOfMoneyFactory,
-        OrderLineDetailsFactory $orderLineDetailsFactory,
-        ShoppingCartDataDebugLogger $shoppingCartDataDebugLogger
+        ShoppingCartDataDebugLogger $shoppingCartDataDebugLogger,
+        AmountFormatterInterface $amountFormatter,
+        LineItemBuilder $lineItemBuilder,
+        ShippingLineItemBuilder $shippingLineItemBuilder
     ) {
         $this->shoppingCartFactory = $shoppingCartFactory;
-        $this->lineItemFactory = $lineItemFactory;
-        $this->amountOfMoneyFactory = $amountOfMoneyFactory;
-        $this->orderLineDetailsFactory = $orderLineDetailsFactory;
         $this->shoppingCartDataDebugLogger = $shoppingCartDataDebugLogger;
+        $this->amountFormatter = $amountFormatter;
+        $this->lineItemBuilder = $lineItemBuilder;
+        $this->shippingLineItemBuilder = $shippingLineItemBuilder;
     }
 
     public function build(CartInterface $quote): ?ShoppingCart
     {
-        $this->lineItems = [];
-        $this->cartTotal = 0;
+        $lineItems = [];
+        $cartTotal = 0;
 
-        foreach ($quote->getItems() as $item) {
-            $this->addLineItem($quote, $item);
+        foreach ($quote->getAllItems() as $item) {
+            if ($item->getParentItem()) {
+                continue;
+            }
+
+            $lineItems[] = $lineItem = $this->lineItemBuilder->buildLineItem($item);
+            $cartTotal += $lineItem->getAmountOfMoney()->getAmount();
         }
 
-        $this->addShippingLineItem($quote);
+        $lineItems[] = $this->shippingLineItemBuilder->buildShippingLineItem($quote);
 
         $shoppingCart = $this->shoppingCartFactory->create();
-        $shoppingCart->setItems($this->lineItems);
+        $shoppingCart->setItems($lineItems);
 
-        if ($this->skipLineItems($quote)) {
+        if ($this->skipLineItems($quote, $cartTotal)) {
             $this->shoppingCartDataDebugLogger->log($quote, $shoppingCart);
             return null;
         }
@@ -88,96 +76,16 @@ class ShoppingCartDataBuilder
         return $shoppingCart;
     }
 
-    public function addLineItem(CartInterface $quote, CartItemInterface $item): void
+    private function skipLineItems(CartInterface $quote, int $cartTotal): bool
     {
-        if ($item->getParentItem()) {
-            return;
-        }
+        $currency = (string) $quote->getCurrency()->getQuoteCurrencyCode();
 
-        $lineItem = $this->lineItemFactory->create();
+        $shippingAmount = $this->amountFormatter->formatToInteger(
+            (float) $quote->getShippingAddress()->getShippingAmount(),
+            $currency
+        );
+        $cartGrandTotal = $this->amountFormatter->formatToInteger((float) $quote->getGrandTotal(), $currency);
 
-        $orderLineDetails = $this->orderLineDetailsFactory->create();
-        $orderLineDetails->setDiscountAmount($this->preparePrice(
-            (float) ($this->getDiscountAmount($item) / $item->getQty())
-        ));
-        $orderLineDetails->setProductCode($item->getSku());
-        $orderLineDetails->setProductName($item->getName());
-        $mealvouchersProductType = $item->getData(MealvouchersProductTypes::MEALVOUCHERS_ATTRIBUTE_CODE);
-        if ($mealvouchersProductType && $mealvouchersProductType !== MealvouchersProductTypes::NO) {
-            $orderLineDetails->setProductType($mealvouchersProductType);
-        }
-
-        $compensation = $this->preparePrice($item->getDiscountTaxCompensationAmount() / $item->getQty());
-        $orderLineDetails->setProductPrice($this->preparePrice((float) $item->getPrice()) + $compensation);
-        $orderLineDetails->setQuantity((float) $item->getQty());
-        $orderLineDetails->setTaxAmount($this->preparePrice((float) ($item->getTaxAmount() / $item->getQty())));
-        $lineItem->setOrderLineDetails($orderLineDetails);
-
-        $amountOfMoney = $this->amountOfMoneyFactory->create();
-        $amountOfMoney->setCurrencyCode($quote->getCurrency()->getQuoteCurrencyCode());
-
-        $totalAmount = (
-            $orderLineDetails->getProductPrice()
-            + $orderLineDetails->getTaxAmount()
-            - $orderLineDetails->getDiscountAmount()
-        ) * $item->getQty();
-
-        $this->cartTotal += $totalAmount;
-
-        $amountOfMoney->setAmount($totalAmount);
-        $lineItem->setAmountOfMoney($amountOfMoney);
-
-        $this->lineItems[] = $lineItem;
-    }
-
-    public function addShippingLineItem(CartInterface $quote): void
-    {
-        $shippingAmount = $this->preparePrice((float) $quote->getShippingAddress()->getShippingAmount());
-        $lineItem = $this->lineItemFactory->create();
-
-        $amountOfMoney = $this->amountOfMoneyFactory->create();
-        $amountOfMoney->setCurrencyCode($quote->getCurrency()->getQuoteCurrencyCode());
-        $amountOfMoney->setAmount($shippingAmount);
-        $lineItem->setAmountOfMoney($amountOfMoney);
-
-        $orderLineDetails = $this->orderLineDetailsFactory->create();
-        $orderLineDetails->setProductName(__('Shipping'));
-        $orderLineDetails->setQuantity(1);
-        $orderLineDetails->setProductPrice($shippingAmount);
-        $mealvouchersProductType = $quote->getData(MealvouchersProductTypes::MEALVOUCHERS_ATTRIBUTE_CODE);
-        if ($mealvouchersProductType && $mealvouchersProductType !== MealvouchersProductTypes::NO) {
-            $orderLineDetails->setProductType($mealvouchersProductType);
-        }
-        $lineItem->setOrderLineDetails($orderLineDetails);
-
-        $this->lineItems[] = $lineItem;
-    }
-
-    public function preparePrice(float $price): int
-    {
-        return (int) round($price * 100);
-    }
-
-    private function getDiscountAmount(CartItemInterface $item): float
-    {
-        if ($item->getProductType() === BundleProductType::TYPE_CODE) {
-            $discountAmount = 0;
-
-            foreach ($item->getChildren() as $child) {
-                $discountAmount += $child->getDiscountAmount();
-            }
-
-            return (float) $discountAmount;
-        }
-
-        return (float) $item->getDiscountAmount();
-    }
-
-    private function skipLineItems(CartInterface $quote): bool
-    {
-        $shippingAmount = $this->preparePrice((float) $quote->getShippingAddress()->getShippingAmount());
-        $cartGrandTotal = $this->preparePrice((float) $quote->getGrandTotal());
-
-        return (bool) ($cartGrandTotal - $this->cartTotal - $shippingAmount);
+        return (bool) ($cartGrandTotal - $cartTotal - $shippingAmount);
     }
 }

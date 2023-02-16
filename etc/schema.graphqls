@@ -29,6 +29,7 @@ input WorldlineHCVaultInput {
 type ProcessPaymentResultOutput {
     result: String
     orderIncrementId: String
+    methodCode: String
 }
 
 type StoreConfig @doc(description: "The type contains information about a store config") {

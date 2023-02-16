@@ -1,8 +1,7 @@
 <?php
-
 declare(strict_types=1);
 
-namespace Worldline\HostedCheckout\Plugin\Payment\Model\Method\Adapter;
+namespace Worldline\HostedCheckout\Plugin\Magento\Payment\Model\Method\Adapter;
 
 use Magento\Payment\Model\Method\Adapter;
 use Worldline\HostedCheckout\Model\Config\PaymentActionReplaceHandlerInterface;
