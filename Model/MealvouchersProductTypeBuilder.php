@@ -21,7 +21,7 @@ class MealvouchersProductTypeBuilder
     private function isMixedProductTypesInQuote(CartInterface $quote): bool
     {
         $firstProductType = null;
-        foreach ($quote->getItems() as $item) {
+        foreach ($quote->getAllItems() as $item) {
             if ($item->getParentItem()) {
                 continue;
             }
@@ -46,7 +46,7 @@ class MealvouchersProductTypeBuilder
 
     private function formatDataForMixedQuote(CartInterface $quote): void
     {
-        foreach ($quote->getItems() as $item) {
+        foreach ($quote->getAllItems() as $item) {
             if ($item->getParentItem()) {
                 continue;
             }
@@ -66,7 +66,7 @@ class MealvouchersProductTypeBuilder
     private function formatDataForUniformQuote(CartInterface $quote): void
     {
         $commonValue = MealvouchersProductTypes::NO;
-        foreach ($quote->getItems() as $item) {
+        foreach ($quote->getAllItems() as $item) {
             if ($item->getParentItem()) {
                 continue;
             }

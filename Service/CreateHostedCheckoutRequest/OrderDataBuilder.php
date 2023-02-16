@@ -1,27 +1,26 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest;
 
+use Magento\Framework\Event\ManagerInterface;
 use Magento\Payment\Gateway\Config\Config;
 use Magento\Quote\Api\Data\CartInterface;
 use OnlinePayments\Sdk\Domain\Order;
-use OnlinePayments\Sdk\Domain\OrderFactory;
 use Worldline\HostedCheckout\Model\MealvouchersProductTypeBuilder;
 use Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order\ShoppingCartDataBuilder;
+use Worldline\HostedCheckout\Ui\ConfigProvider;
+use Worldline\PaymentCore\Api\Service\CreateRequest\Order\GeneralDataBuilderInterface;
 use Worldline\PaymentCore\Model\MethodNameExtractor;
-use Worldline\PaymentCore\Service\CreateRequest\Order\AmountDataBuilder;
-use Worldline\PaymentCore\Service\CreateRequest\Order\CustomerDataBuilder;
-use Worldline\PaymentCore\Service\CreateRequest\Order\ReferenceDataBuilder;
-use Worldline\PaymentCore\Service\CreateRequest\Order\ShippingAddressDataBuilder;
 
 class OrderDataBuilder
 {
+    public const ORDER_DATA = 'order_data';
+
     /**
-     * @var OrderFactory
+     * @var ManagerInterface
      */
-    private $orderFactory;
+    private $eventManager;
 
     /**
      * @var MethodNameExtractor
@@ -29,24 +28,9 @@ class OrderDataBuilder
     private $methodNameExtractor;
 
     /**
-     * @var AmountDataBuilder
+     * @var GeneralDataBuilderInterface
      */
-    private $amountDataBuilder;
-
-    /**
-     * @var CustomerDataBuilder
-     */
-    private $customerDataBuilder;
-
-    /**
-     * @var ReferenceDataBuilder
-     */
-    private $referenceDataBuilder;
-
-    /**
-     * @var ShippingAddressDataBuilder
-     */
-    private $shippingAddressDataBuilder;
+    private $generalOrderDataBuilder;
 
     /**
      * @var ShoppingCartDataBuilder
@@ -64,22 +48,16 @@ class OrderDataBuilder
     private $configProviders;
 
     public function __construct(
-        OrderFactory $orderFactory,
+        ManagerInterface $eventManager,
         MethodNameExtractor $methodNameExtractor,
-        AmountDataBuilder $amountDataBuilder,
-        CustomerDataBuilder $customerDataBuilder,
-        ReferenceDataBuilder $referenceDataBuilder,
-        ShippingAddressDataBuilder $shippingAddressDataBuilder,
+        GeneralDataBuilderInterface $generalOrderDataBuilder,
         ShoppingCartDataBuilder $shoppingCartDataBuilder,
         MealvouchersProductTypeBuilder $mealvouchersProductTypeBuilder,
         array $configProviders = []
     ) {
-        $this->orderFactory = $orderFactory;
+        $this->eventManager = $eventManager;
         $this->methodNameExtractor = $methodNameExtractor;
-        $this->amountDataBuilder = $amountDataBuilder;
-        $this->customerDataBuilder = $customerDataBuilder;
-        $this->referenceDataBuilder = $referenceDataBuilder;
-        $this->shippingAddressDataBuilder = $shippingAddressDataBuilder;
+        $this->generalOrderDataBuilder = $generalOrderDataBuilder;
         $this->shoppingCartDataBuilder = $shoppingCartDataBuilder;
         $this->mealvouchersProductTypeBuilder = $mealvouchersProductTypeBuilder;
         $this->configProviders = $configProviders;
@@ -88,15 +66,14 @@ class OrderDataBuilder
     public function build(CartInterface $quote): Order
     {
         $storeId = (int)$quote->getStoreId();
-        $order = $this->orderFactory->create();
 
-        $order->setAmountOfMoney($this->amountDataBuilder->build($quote));
-        $order->setCustomer($this->customerDataBuilder->build($quote));
-        $order->setReferences($this->referenceDataBuilder->build($quote));
-        $order->setShipping($this->shippingAddressDataBuilder->build($quote));
+        $order = $this->generalOrderDataBuilder->build($quote);
 
         $methodCode = $this->methodNameExtractor->extract($quote->getPayment());
         $config = $this->configProviders[$methodCode] ?? null;
+
+        $args = ['quote' => $quote, self::ORDER_DATA => $order];
+        $this->eventManager->dispatch(ConfigProvider::HC_CODE . '_order_data_builder', $args);
 
         if (!$config instanceof Config || !$config->isCartLines($storeId)) {
             return $order;

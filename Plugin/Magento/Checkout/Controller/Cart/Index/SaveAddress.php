@@ -1,8 +1,7 @@
 <?php
-
 declare(strict_types=1);
 
-namespace Worldline\HostedCheckout\Plugin\Checkout\Controller\Cart\Index;
+namespace Worldline\HostedCheckout\Plugin\Magento\Checkout\Controller\Cart\Index;
 
 use Magento\Checkout\Controller\Index\Index;
 use Magento\Framework\Exception\LocalizedException;

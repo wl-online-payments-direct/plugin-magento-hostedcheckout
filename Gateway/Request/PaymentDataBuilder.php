@@ -1,10 +1,10 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Gateway\Request;
 
 use Magento\Payment\Gateway\Request\BuilderInterface;
+use Worldline\PaymentCore\Api\AmountFormatterInterface;
 use Worldline\PaymentCore\Gateway\SubjectReader;
 
 class PaymentDataBuilder implements BuilderInterface
@@ -18,17 +18,27 @@ class PaymentDataBuilder implements BuilderInterface
      */
     private $subjectReader;
 
+    /**
+     * @var AmountFormatterInterface
+     */
+    private $amountFormatter;
+
     public function __construct(
-        SubjectReader $subjectReader
+        SubjectReader $subjectReader,
+        AmountFormatterInterface $amountFormatter
     ) {
         $this->subjectReader = $subjectReader;
+        $this->amountFormatter = $amountFormatter;
     }
 
     public function build(array $buildSubject): array
     {
         $paymentDO = $this->subjectReader->readPayment($buildSubject);
         $payment = $paymentDO->getPayment();
-        $amount = (int)round($this->subjectReader->readAmount($buildSubject) * 100);
+        $amount = $this->amountFormatter->formatToInteger(
+            (float) $this->subjectReader->readAmount($buildSubject),
+            (string) $payment->getOrder()->getOrderCurrencyCode()
+        );
 
         return [
             self::AMOUNT => $amount,

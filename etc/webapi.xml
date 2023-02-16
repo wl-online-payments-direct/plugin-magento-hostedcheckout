@@ -3,13 +3,13 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
     <!-- HOSTED CHECKOUT: get redirect url -->
     <route url="/V1/guest-carts/:cartId/worldline/hosted-checkout-redirect" method="POST">
-        <service class="Worldline\HostedCheckout\Api\RedirectManagementInterface" method="processGuestRedirectRequest"/>
+        <service class="Worldline\HostedCheckout\Api\RedirectManagementInterface" method="createGuestRequest"/>
         <resources>
             <resource ref="anonymous" />
         </resources>
     </route>
     <route url="/V1/carts/mine/worldline/hosted-checkout-redirect" method="POST">
-        <service class="Worldline\HostedCheckout\Api\RedirectManagementInterface" method="processRedirectRequest"/>
+        <service class="Worldline\HostedCheckout\Api\RedirectManagementInterface" method="createRequest"/>
         <resources>
             <resource ref="self" />
         </resources>

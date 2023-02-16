@@ -17,6 +17,7 @@ use Magento\Tax\Model\System\Config\Source\Algorithm as CalcMethodBasedOnOptionP
 use Magento\Tax\Model\System\Config\Source\Apply as ApplyCustomerTaxOptionProvider;
 use Magento\Tax\Model\System\Config\Source\PriceType as PriceTypeOptionProvider;
 use OnlinePayments\Sdk\Domain\ShoppingCart;
+use Worldline\PaymentCore\Api\AmountFormatterInterface;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -43,6 +44,11 @@ class ShoppingCartDataDebugLogger
      */
     private $options;
 
+    /**
+     * @var AmountFormatterInterface
+     */
+    private $amountFormatter;
+
     public function __construct(
         Logger $logger,
         ScopeConfigInterface $scopeConfig,
@@ -51,7 +57,8 @@ class ShoppingCartDataDebugLogger
         PriceTypeOptionProvider $priceTypeOptionProvider,
         ApplyCustomerTaxOptionProvider $applyCustomerTaxOptionProvider,
         ApplyTaxOnOptionProvider $applyTaxOnOptionProvider,
-        YesNoOptionProvider $yesNoOptionProvider
+        YesNoOptionProvider $yesNoOptionProvider,
+        AmountFormatterInterface $amountFormatter
     ) {
         $this->logger = $logger;
         $this->scopeConfig = $scopeConfig;
@@ -63,6 +70,7 @@ class ShoppingCartDataDebugLogger
             'applyTaxOn' => $applyTaxOnOptionProvider->toOptionArray(),
             'yesNo' => $yesNoOptionProvider->toOptionArray()
         ];
+        $this->amountFormatter = $amountFormatter;
     }
 
     /**
@@ -86,6 +94,10 @@ class ShoppingCartDataDebugLogger
     {
         $website = $quote->getStore()->getWebsite();
         $this->websiteId = (int) $website->getId();
+        $amount = $this->amountFormatter->formatToInteger(
+            (float) $quote->getGrandTotal(),
+            (string) $quote->getCurrency()->getQuoteCurrencyCode()
+        );
 
         return [
             'Website' => $website->getName() . ' (code: ' . $website->getCode() . ', id: ' . $this->websiteId . ')',
@@ -96,7 +108,7 @@ class ShoppingCartDataDebugLogger
             'Totals' => [
                 'quote.grand_total' => $quote->getGrandTotal(),
                 'quote.base_grand_total' => $quote->getBaseGrandTotal(),
-                'order.amountOfMoney' => (int) round($quote->getGrandTotal() * 100),
+                'order.amountOfMoney' => $amount,
             ]
         ];
     }
@@ -179,7 +191,7 @@ class ShoppingCartDataDebugLogger
     {
         $data = [];
 
-        foreach ($quote->getItems() as $item) {
+        foreach ($quote->getAllItems() as $item) {
             $data[] = $this->collectQuoteItemData($item);
         }
 
