@@ -30,6 +30,7 @@ type ProcessPaymentResultOutput {
     result: String
     orderIncrementId: String
     methodCode: String
+    paymentProductId: Int
 }
 
 type StoreConfig @doc(description: "The type contains information about a store config") {
