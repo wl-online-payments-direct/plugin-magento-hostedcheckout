@@ -8,6 +8,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\OrderFactory;
 use Worldline\HostedCheckout\Service\HostedCheckout\GetHostedCheckoutStatusService;
 use Worldline\PaymentCore\Api\Data\OrderStateInterfaceFactory;
+use Worldline\PaymentCore\Api\Data\PaymentInterface;
 use Worldline\PaymentCore\Model\Order\RejectOrderException;
 use Worldline\PaymentCore\Model\OrderState;
 use Worldline\PaymentCore\Model\ResourceModel\Quote as QuoteResource;
@@ -129,6 +130,7 @@ class ReturnRequestProcessor
             if ($redirectPaymentMethodSpecificOutput) {
                 $paymentProductId = (int) $redirectPaymentMethodSpecificOutput->getPaymentProductId();
                 $this->quoteResource->setPaymentIdAndSave($quote, $paymentProductId);
+                $orderState->setPaymentProductId($paymentProductId);
             }
 
             $orderState->setState(self::WAITING_STATE);
