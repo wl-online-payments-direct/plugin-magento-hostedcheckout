@@ -7,8 +7,8 @@ use Magento\Framework\Exception\LocalizedException;
 use OnlinePayments\Sdk\Domain\GetHostedCheckoutResponse;
 use Psr\Log\LoggerInterface;
 use Worldline\HostedCheckout\Api\Service\HostedCheckout\GetHostedCheckoutStatusServiceInterface;
-use Worldline\PaymentCore\Model\ClientProvider;
-use Worldline\PaymentCore\Model\Config\WorldlineConfig;
+use Worldline\PaymentCore\Api\ClientProviderInterface;
+use Worldline\PaymentCore\Api\Config\WorldlineConfigInterface;
 
 /**
  * @link https://support.direct.ingenico.com/documentation/api/reference/#operation/GetHostedCheckoutApi
@@ -16,12 +16,12 @@ use Worldline\PaymentCore\Model\Config\WorldlineConfig;
 class GetHostedCheckoutStatusService implements GetHostedCheckoutStatusServiceInterface
 {
     /**
-     * @var ClientProvider
+     * @var ClientProviderInterface
      */
     private $clientProvider;
 
     /**
-     * @var WorldlineConfig
+     * @var WorldlineConfigInterface
      */
     private $worldlineConfig;
 
@@ -36,8 +36,8 @@ class GetHostedCheckoutStatusService implements GetHostedCheckoutStatusServiceIn
     private $cachedRequests = [];
 
     public function __construct(
-        ClientProvider $clientProvider,
-        WorldlineConfig $worldlineConfig,
+        ClientProviderInterface $clientProvider,
+        WorldlineConfigInterface $worldlineConfig,
         LoggerInterface $logger
     ) {
         $this->clientProvider = $clientProvider;

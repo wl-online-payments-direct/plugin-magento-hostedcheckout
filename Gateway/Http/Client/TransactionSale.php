@@ -53,18 +53,18 @@ class TransactionSale extends AbstractTransaction
      */
     private function writeLogIfNeeded(array $data, GetHostedCheckoutResponse $response): void
     {
-        $transactionAmountOfMoney = $response->getCreatedPaymentOutput()
-            ->getPayment()
-            ->getPaymentOutput()
-            ->getAmountOfMoney()
-            ->getAmount();
-        $orderAmountOfMoney = $data[PaymentDataBuilder::AMOUNT] ?? 0;
+        $orderAmount = $data[PaymentDataBuilder::AMOUNT] ?? 0;
+        $paymentOutput = $response->getCreatedPaymentOutput()->getPayment()->getPaymentOutput();
+        $transactionAmount = $paymentOutput->getAmountOfMoney()->getAmount();
+        if ($paymentOutput->getSurchargeSpecificOutput()) {
+            $transactionAmount += $paymentOutput->getSurchargeSpecificOutput()->getSurchargeAmount()->getAmount();
+        }
 
-        if ($transactionAmountOfMoney !== $orderAmountOfMoney) {
+        if ($transactionAmount !== $orderAmount) {
             $this->logger->warning(__('Wrong amount'), [
                 PaymentDataBuilder::HOSTED_CHECKOUT_ID => $response->getCreatedPaymentOutput()->getPayment()->getId(),
-                'transaction_amount_of_money' => $transactionAmountOfMoney,
-                'order_amount_of_money' => $orderAmountOfMoney,
+                'transaction_amount_of_money' => $transactionAmount,
+                'order_amount_of_money' => $orderAmount,
             ]);
             throw new LocalizedException(__('Wrong amount'));
         }

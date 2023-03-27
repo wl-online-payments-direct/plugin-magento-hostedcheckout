@@ -8,12 +8,12 @@ use Magento\Payment\Gateway\Validator\ResultInterface;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 use OnlinePayments\Sdk\Domain\GetHostedCheckoutResponse;
 use Worldline\PaymentCore\Api\AmountFormatterInterface;
-use Worldline\PaymentCore\Gateway\SubjectReader;
+use Worldline\PaymentCore\Api\SubjectReaderInterface;
 
 class AmountResponseValidator extends AbstractValidator
 {
     /**
-     * @var SubjectReader
+     * @var SubjectReaderInterface
      */
     private $subjectReader;
 
@@ -24,7 +24,7 @@ class AmountResponseValidator extends AbstractValidator
 
     public function __construct(
         ResultInterfaceFactory $resultFactory,
-        SubjectReader $subjectReader,
+        SubjectReaderInterface $subjectReader,
         AmountFormatterInterface $amountFormatter
     ) {
         parent::__construct($resultFactory);
@@ -36,11 +36,14 @@ class AmountResponseValidator extends AbstractValidator
     {
         /** @var GetHostedCheckoutResponse $response */
         $response = $this->subjectReader->readResponseObject($validationSubject);
-        $transactionAmountOfMoney = $response->getCreatedPaymentOutput()
-            ->getPayment()
-            ->getPaymentOutput()
-            ->getAmountOfMoney()
-            ->getAmount();
+
+        $paymentOutput = $response->getCreatedPaymentOutput()->getPayment()->getPaymentOutput();
+        $transactionAmountOfMoney = $paymentOutput->getAmountOfMoney()->getAmount();
+
+        if ($paymentOutput->getSurchargeSpecificOutput()) {
+            $surchargeAmount = $paymentOutput->getSurchargeSpecificOutput()->getSurchargeAmount()->getAmount();
+            $transactionAmountOfMoney += $surchargeAmount;
+        }
 
         $currency = (string) $validationSubject['payment']->getPayment()->getOrder()->getOrderCurrencyCode();
         $orderAmountOfMoney = $this->amountFormatter->formatToInteger((float) $validationSubject['amount'], $currency);

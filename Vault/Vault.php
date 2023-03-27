@@ -15,7 +15,7 @@ use Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory;
 use Magento\Vault\Api\PaymentTokenManagementInterface;
 use Magento\Vault\Model\Method\Vault as MagentoVault;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
-use Worldline\PaymentCore\Model\VaultValidation;
+use Worldline\PaymentCore\Api\VaultValidationInterface;
 
 /**
  * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -24,7 +24,7 @@ use Worldline\PaymentCore\Model\VaultValidation;
 class Vault extends MagentoVault
 {
     /**
-     * @var VaultValidation
+     * @var VaultValidationInterface
      */
     private $vaultValidation;
 
@@ -38,7 +38,7 @@ class Vault extends MagentoVault
         Command\CommandManagerPoolInterface $commandManagerPool,
         PaymentTokenManagementInterface $tokenManagement,
         OrderPaymentExtensionInterfaceFactory $paymentExtensionFactory,
-        VaultValidation $vaultValidation,
+        VaultValidationInterface $vaultValidation,
         string $code
     ) {
         parent::__construct(

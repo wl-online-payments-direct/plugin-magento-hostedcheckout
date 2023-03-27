@@ -76,6 +76,9 @@ class ShippingLineItemBuilder
     private function getOrderLineDetails(CartInterface $quote, AmountOfMoney $amountOfMoney): OrderLineDetails
     {
         $orderLineDetails = $this->orderLineDetailsFactory->create();
+        $orderLineDetails->setDiscountAmount(0);
+        $orderLineDetails->setTaxAmount(0);
+        $orderLineDetails->setProductCode(__('Shipping'));
         $orderLineDetails->setProductName(__('Shipping'));
         $orderLineDetails->setQuantity(1);
         $orderLineDetails->setProductPrice($amountOfMoney->getAmount());

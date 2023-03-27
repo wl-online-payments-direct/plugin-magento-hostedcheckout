@@ -5,7 +5,7 @@ namespace Worldline\HostedCheckout\Gateway\Request;
 
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Worldline\PaymentCore\Api\AmountFormatterInterface;
-use Worldline\PaymentCore\Gateway\SubjectReader;
+use Worldline\PaymentCore\Api\SubjectReaderInterface;
 
 class PaymentDataBuilder implements BuilderInterface
 {
@@ -14,7 +14,7 @@ class PaymentDataBuilder implements BuilderInterface
     public const STORE_ID = 'store_id';
 
     /**
-     * @var SubjectReader
+     * @var SubjectReaderInterface
      */
     private $subjectReader;
 
@@ -24,7 +24,7 @@ class PaymentDataBuilder implements BuilderInterface
     private $amountFormatter;
 
     public function __construct(
-        SubjectReader $subjectReader,
+        SubjectReaderInterface $subjectReader,
         AmountFormatterInterface $amountFormatter
     ) {
         $this->subjectReader = $subjectReader;
@@ -43,7 +43,7 @@ class PaymentDataBuilder implements BuilderInterface
         return [
             self::AMOUNT => $amount,
             self::STORE_ID => (int)$payment->getMethodInstance()->getStore(),
-            self::HOSTED_CHECKOUT_ID => $payment->getAdditionalInformation(self::HOSTED_CHECKOUT_ID),
+            self::HOSTED_CHECKOUT_ID => (string) (int) $payment->getAdditionalInformation(self::HOSTED_CHECKOUT_ID),
         ];
     }
 }

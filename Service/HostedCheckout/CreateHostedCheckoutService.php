@@ -7,9 +7,10 @@ use Exception;
 use Magento\Framework\Exception\LocalizedException;
 use OnlinePayments\Sdk\Domain\CreateHostedCheckoutRequest;
 use OnlinePayments\Sdk\Domain\CreateHostedCheckoutResponse;
+use Psr\Log\LoggerInterface;
 use Worldline\HostedCheckout\Api\Service\HostedCheckout\CreateHostedCheckoutServiceInterface;
-use Worldline\PaymentCore\Model\ClientProvider;
-use Worldline\PaymentCore\Model\Config\WorldlineConfig;
+use Worldline\PaymentCore\Api\ClientProviderInterface;
+use Worldline\PaymentCore\Api\Config\WorldlineConfigInterface;
 
 /**
  * @link https://support.direct.ingenico.com/documentation/api/reference/#operation/CreateHostedCheckoutApi
@@ -17,21 +18,28 @@ use Worldline\PaymentCore\Model\Config\WorldlineConfig;
 class CreateHostedCheckoutService implements CreateHostedCheckoutServiceInterface
 {
     /**
-     * @var WorldlineConfig
+     * @var WorldlineConfigInterface
      */
     private $worldlineConfig;
 
     /**
-     * @var ClientProvider
+     * @var ClientProviderInterface
      */
     private $clientProvider;
 
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
     public function __construct(
-        WorldlineConfig $worldlineConfig,
-        ClientProvider $clientProvider
+        WorldlineConfigInterface $worldlineConfig,
+        ClientProviderInterface $clientProvider,
+        LoggerInterface $logger
     ) {
         $this->worldlineConfig = $worldlineConfig;
         $this->clientProvider = $clientProvider;
+        $this->logger = $logger;
     }
 
     /**
@@ -50,6 +58,7 @@ class CreateHostedCheckoutService implements CreateHostedCheckoutServiceInterfac
                 ->hostedCheckout()
                 ->createHostedCheckout($request);
         } catch (Exception $e) {
+            $this->logger->debug($e->getMessage());
             throw new LocalizedException(
                 __('CreateHostedCheckoutApi request has failed. Please contact the provider.')
             );

@@ -10,8 +10,10 @@ use OnlinePayments\Sdk\Domain\Order;
 use Worldline\HostedCheckout\Model\MealvouchersProductTypeBuilder;
 use Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order\ShoppingCartDataBuilder;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
+use Worldline\PaymentCore\Api\Config\GeneralSettingsConfigInterface;
+use Worldline\PaymentCore\Api\MethodNameExtractorInterface;
 use Worldline\PaymentCore\Api\Service\CreateRequest\Order\GeneralDataBuilderInterface;
-use Worldline\PaymentCore\Model\MethodNameExtractor;
+use Worldline\PaymentCore\Api\Service\CreateRequest\Order\SurchargeDataBuilderInterface;
 
 class OrderDataBuilder
 {
@@ -23,7 +25,7 @@ class OrderDataBuilder
     private $eventManager;
 
     /**
-     * @var MethodNameExtractor
+     * @var MethodNameExtractorInterface
      */
     private $methodNameExtractor;
 
@@ -43,16 +45,28 @@ class OrderDataBuilder
     private $mealvouchersProductTypeBuilder;
 
     /**
+     * @var SurchargeDataBuilderInterface
+     */
+    private $surchargeDataBuilder;
+
+    /**
+     * @var GeneralSettingsConfigInterface
+     */
+    private $generalSettings;
+
+    /**
      * @var Config[]
      */
     private $configProviders;
 
     public function __construct(
         ManagerInterface $eventManager,
-        MethodNameExtractor $methodNameExtractor,
+        MethodNameExtractorInterface $methodNameExtractor,
         GeneralDataBuilderInterface $generalOrderDataBuilder,
         ShoppingCartDataBuilder $shoppingCartDataBuilder,
         MealvouchersProductTypeBuilder $mealvouchersProductTypeBuilder,
+        SurchargeDataBuilderInterface $surchargeDataBuilder,
+        GeneralSettingsConfigInterface $generalSettings,
         array $configProviders = []
     ) {
         $this->eventManager = $eventManager;
@@ -60,6 +74,8 @@ class OrderDataBuilder
         $this->generalOrderDataBuilder = $generalOrderDataBuilder;
         $this->shoppingCartDataBuilder = $shoppingCartDataBuilder;
         $this->mealvouchersProductTypeBuilder = $mealvouchersProductTypeBuilder;
+        $this->surchargeDataBuilder = $surchargeDataBuilder;
+        $this->generalSettings = $generalSettings;
         $this->configProviders = $configProviders;
     }
 
@@ -71,6 +87,10 @@ class OrderDataBuilder
 
         $methodCode = $this->methodNameExtractor->extract($quote->getPayment());
         $config = $this->configProviders[$methodCode] ?? null;
+
+        if ($this->generalSettings->isApplySurcharge($storeId) && (float)$quote->getGrandTotal() > 0.00001) {
+            $order->setSurchargeSpecificInput($this->surchargeDataBuilder->build());
+        }
 
         $args = ['quote' => $quote, self::ORDER_DATA => $order];
         $this->eventManager->dispatch(ConfigProvider::HC_CODE . '_order_data_builder', $args);

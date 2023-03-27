@@ -5,18 +5,18 @@ namespace Worldline\HostedCheckout\WebApi\RedirectManagement;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Api\Data\PaymentInterface;
+use OnlinePayments\Sdk\Domain\CreatePaymentRequestFactory;
 use Worldline\HostedCheckout\Api\TokenManagerInterface;
-use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
 use Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutRequestBuilder;
-use Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutService;
+use Worldline\PaymentCore\Api\Service\Payment\CreatePaymentServiceInterface;
 use Worldline\PaymentCore\Model\DataAssigner\DataAssignerInterface;
 
-class CreatePaymentDataAssigner implements DataAssignerInterface
+class CreateVaultPaymentDataAssigner implements DataAssignerInterface
 {
     /**
-     * @var CreateHostedCheckoutService
+     * @var CreatePaymentServiceInterface
      */
-    private $createRequest;
+    private $createPaymentService;
 
     /**
      * @var CreateHostedCheckoutRequestBuilder
@@ -28,14 +28,21 @@ class CreatePaymentDataAssigner implements DataAssignerInterface
      */
     private $tokenManager;
 
+    /**
+     * @var CreatePaymentRequestFactory
+     */
+    private $createPaymentRequestFactory;
+
     public function __construct(
-        CreateHostedCheckoutService $createRequest,
+        CreatePaymentServiceInterface $createPaymentService,
         CreateHostedCheckoutRequestBuilder $createRequestBuilder,
-        TokenManagerInterface $tokenManager
+        TokenManagerInterface $tokenManager,
+        CreatePaymentRequestFactory $createPaymentRequestFactory
     ) {
-        $this->createRequest = $createRequest;
+        $this->createPaymentService = $createPaymentService;
         $this->createRequestBuilder = $createRequestBuilder;
         $this->tokenManager = $tokenManager;
+        $this->createPaymentRequestFactory = $createPaymentRequestFactory;
     }
 
     /**
@@ -51,16 +58,19 @@ class CreatePaymentDataAssigner implements DataAssignerInterface
     public function assign(PaymentInterface $payment, array $additionalInformation): void
     {
         $quote = $payment->getQuote();
-
         $token = $this->tokenManager->getToken($quote);
-        if ($token && $this->tokenManager->isSepaToken($token)) {
+
+        if (!$token || !$this->tokenManager->isSepaToken($token)) {
             return;
         }
 
-        $request = $this->createRequestBuilder->build($quote);
-        $response = $this->createRequest->execute($request, (int)$quote->getStoreId());
-        $payment->setAdditionalInformation('return_id', $response->getRETURNMAC());
-        $payment->setAdditionalInformation(PaymentDataBuilder::HOSTED_CHECKOUT_ID, $response->getHostedCheckoutId());
-        $payment->setWlRedirectUrl($response->getRedirectUrl());
+        $requestForHostedCheckout = $this->createRequestBuilder->build($quote);
+        $createPaymentRequest = $this->createPaymentRequestFactory->create();
+        $createPaymentRequest->fromJson($requestForHostedCheckout->toJson());
+
+        $response = $this->createPaymentService->execute($createPaymentRequest, (int)$quote->getStoreId());
+        $paymentId = $response->getPayment()->getId();
+        $payment->setAdditionalInformation('payment_id', $paymentId);
+        $payment->setAdditionalInformation('return_id', $paymentId);
     }
 }
