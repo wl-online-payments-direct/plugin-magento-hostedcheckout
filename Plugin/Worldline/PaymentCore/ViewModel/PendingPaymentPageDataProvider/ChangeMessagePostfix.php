@@ -5,17 +5,17 @@ namespace Worldline\HostedCheckout\Plugin\Worldline\PaymentCore\ViewModel\Pendin
 
 use Worldline\PaymentCore\Api\Data\PaymentInterface;
 use Worldline\PaymentCore\Api\Data\PaymentProductsDetailsInterface;
+use Worldline\PaymentCore\Api\QuoteResourceInterface;
 use Worldline\PaymentCore\ViewModel\PendingPaymentPageDataProvider;
-use Worldline\PaymentCore\Model\ResourceModel\Quote as QuoteResource;
 
 class ChangeMessagePostfix
 {
     /**
-     * @var QuoteResource
+     * @var QuoteResourceInterface
      */
     private $quoteResource;
 
-    public function __construct(QuoteResource $quoteResource)
+    public function __construct(QuoteResourceInterface $quoteResource)
     {
         $this->quoteResource = $quoteResource;
     }

@@ -12,7 +12,7 @@ use OnlinePayments\Sdk\Domain\HostedCheckoutSpecificInput;
 use OnlinePayments\Sdk\Domain\HostedCheckoutSpecificInputFactory;
 use Worldline\HostedCheckout\Gateway\Config\Config;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
-use Worldline\PaymentCore\Model\Config\GeneralSettingsConfig;
+use Worldline\PaymentCore\Api\Config\GeneralSettingsConfigInterface;
 
 class SpecificInputDataBuilder
 {
@@ -35,7 +35,7 @@ class SpecificInputDataBuilder
     private $eventManager;
 
     /**
-     * @var GeneralSettingsConfig
+     * @var GeneralSettingsConfigInterface
      */
     private $generalSettings;
 
@@ -53,7 +53,7 @@ class SpecificInputDataBuilder
         Config $config,
         Resolver $store,
         ManagerInterface $eventManager,
-        GeneralSettingsConfig $generalSettings,
+        GeneralSettingsConfigInterface $generalSettings,
         HostedCheckoutSpecificInputFactory $hostedCheckoutSpecificInputFactory,
         CardPaymentMethodSpecificInputForHostedCheckoutFactory $cardPaymentMethodDataFactory
     ) {

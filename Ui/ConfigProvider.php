@@ -4,12 +4,17 @@ declare(strict_types=1);
 namespace Worldline\HostedCheckout\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Worldline\HostedCheckout\Gateway\Config\Config;
-use Worldline\PaymentCore\Ui\PaymentIconsProvider;
+use Worldline\PaymentCore\Api\Data\PaymentProductsDetailsInterface;
+use Worldline\PaymentCore\Api\Ui\PaymentIconsProviderInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ */
 class ConfigProvider implements ConfigProviderInterface
 {
     /**
@@ -33,7 +38,12 @@ class ConfigProvider implements ConfigProviderInterface
     private $config;
 
     /**
-     * @var PaymentIconsProvider
+     * @var Session
+     */
+    private $checkoutSession;
+
+    /**
+     * @var PaymentIconsProviderInterface
      */
     private $iconProvider;
 
@@ -45,11 +55,13 @@ class ConfigProvider implements ConfigProviderInterface
     public function __construct(
         LoggerInterface $logger,
         Config $config,
+        Session $checkoutSession,
         StoreManagerInterface $storeManager,
-        PaymentIconsProvider $iconProvider
+        PaymentIconsProviderInterface $iconProvider
     ) {
         $this->logger = $logger;
         $this->config = $config;
+        $this->checkoutSession = $checkoutSession;
         $this->iconProvider = $iconProvider;
         $this->storeManager = $storeManager;
     }
@@ -59,18 +71,31 @@ class ConfigProvider implements ConfigProviderInterface
         try {
             $storeId = (int) $this->storeManager->getStore()->getStoreId();
 
-            return [
+            $result = [
                 'payment' => [
                     self::HC_CODE => [
                         'isActive' => $this->config->isActive($storeId),
-                        'icons' => $this->iconProvider->getIcons($storeId),
+                        'icons' => $this->getIcons($storeId),
                         'hcVaultCode' => self::HC_VAULT_CODE
                     ]
                 ]
             ];
+
+            return $result;
         } catch (LocalizedException $e) {
             $this->logger->critical($e);
             return [];
         }
+    }
+
+    private function getIcons(int $storeId): array
+    {
+        $quote = $this->checkoutSession->getQuote();
+        $icons = $this->iconProvider->getIcons($storeId);
+        if ((float)$quote->getGrandTotal() < 0.00001) {
+            unset($icons[PaymentProductsDetailsInterface::SEPA_DIRECT_DEBIT_PRODUCT_ID]);
+        }
+
+        return $icons;
     }
 }

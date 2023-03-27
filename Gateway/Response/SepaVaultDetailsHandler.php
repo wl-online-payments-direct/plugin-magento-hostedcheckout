@@ -12,9 +12,8 @@ use Magento\Vault\Api\Data\PaymentTokenInterface;
 use OnlinePayments\Sdk\Domain\GetHostedCheckoutResponse;
 use Worldline\PaymentCore\Api\CardDateInterface;
 use Worldline\PaymentCore\Api\SubjectReaderInterface;
-use Worldline\PaymentCore\Api\Config\WorldlineConfigInterface;
 
-class VaultDetailsHandler implements HandlerInterface
+class SepaVaultDetailsHandler implements HandlerInterface
 {
     /**
      * @var PaymentTokenFactoryInterface
@@ -32,11 +31,6 @@ class VaultDetailsHandler implements HandlerInterface
     private $subjectReader;
 
     /**
-     * @var WorldlineConfigInterface
-     */
-    private $worldlineConfig;
-
-    /**
      * @var CardDateInterface
      */
     private $cardDate;
@@ -45,13 +39,11 @@ class VaultDetailsHandler implements HandlerInterface
         PaymentTokenFactoryInterface $paymentTokenFactory,
         OrderPaymentExtensionInterfaceFactory $paymentExtensionFactory,
         SubjectReaderInterface $subjectReader,
-        WorldlineConfigInterface $worldlineConfig,
         CardDateInterface $cardDate
     ) {
         $this->paymentTokenFactory = $paymentTokenFactory;
         $this->paymentExtensionFactory = $paymentExtensionFactory;
         $this->subjectReader = $subjectReader;
-        $this->worldlineConfig = $worldlineConfig;
         $this->cardDate = $cardDate;
     }
 
@@ -60,9 +52,7 @@ class VaultDetailsHandler implements HandlerInterface
         $paymentDO = $this->subjectReader->readPayment($handlingSubject);
         $transaction = $this->subjectReader->readTransaction($response);
         $payment = $paymentDO->getPayment();
-
-        $paymentToken = $this->getVaultPaymentToken($transaction, $payment);
-        if (null !== $paymentToken) {
+        if ($paymentToken = $this->getVaultPaymentToken($transaction, $payment)) {
             $extensionAttributes = $this->getExtensionAttributes($payment);
             $extensionAttributes->setVaultPaymentToken($paymentToken);
         }
@@ -72,42 +62,38 @@ class VaultDetailsHandler implements HandlerInterface
         GetHostedCheckoutResponse $transaction,
         InfoInterface $payment
     ): ?PaymentTokenInterface {
-        $cardPaymentMethodSpecificOutput = $transaction->getCreatedPaymentOutput()
+        $output = $transaction->getCreatedPaymentOutput()
             ->getPayment()
             ->getPaymentOutput()
-            ->getCardPaymentMethodSpecificOutput();
+            ->getSepaDirectDebitPaymentMethodSpecificOutput();
 
-        if (!$cardPaymentMethodSpecificOutput) {
+        if (!$output) {
             return null;
         }
 
-        $payment->setAdditionalInformation(
-            'card_number',
-            mb_substr($cardPaymentMethodSpecificOutput->getCard()->getCardNumber(), -4)
-        );
-        $payment->setAdditionalInformation(
-            'payment_product_id',
-            $cardPaymentMethodSpecificOutput->getPaymentProductId()
-        );
+        if (!$token = $output->getPaymentProduct771SpecificOutput()->getMandateReference()) {
+            return null;
+        }
 
         if (!$payment->getAdditionalInformation('is_active_payment_token_enabler')) {
             return null;
         }
 
-        $token = $cardPaymentMethodSpecificOutput->getToken();
-        $card = $cardPaymentMethodSpecificOutput->getCard();
-        if (empty($token) || empty($card->getExpiryDate())) {
-            return null;
-        }
+        $expiresAt = strtotime('now +36 months');
+        $expirationDate = date('Y-m-d H:i:s', $expiresAt);
 
+        $payment->setAdditionalInformation('card_number', 'Sepa Direct Debit');
+        $payment->setAdditionalInformation('is_active_payment_token_enabler', true);
+        $payment->setAdditionalInformation('payment_product_id', $output->getPaymentProductId());
         $paymentToken = $this->paymentTokenFactory->create(PaymentTokenFactoryInterface::TOKEN_TYPE_CREDIT_CARD);
         $paymentToken->setGatewayToken($token);
-        $expirationDate = $this->cardDate->getExpirationDateAt($cardPaymentMethodSpecificOutput);
-        $paymentToken->setExpiresAt($expirationDate);
+
+        $paymentToken->setExpiresAt($expiresAt);
         $paymentToken->setTokenDetails($this->cardDate->convertDetailsToJSON([
-            'type' => $this->worldlineConfig->mapCcType($cardPaymentMethodSpecificOutput->getPaymentProductId()),
-            'maskedCC' => $card->getCardNumber(),
-            'expirationDate' => $this->cardDate->getExpirationDate($cardPaymentMethodSpecificOutput)
+            'type' => 'Sepa Direct Debit',
+            'maskedCC' => 'Sepa Direct Debit',
+            'expirationDate' => $expirationDate,
+            'payment_product_id' => $output->getPaymentProductId(),
         ]));
 
         return $paymentToken;

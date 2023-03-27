@@ -3,18 +3,17 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Model;
 
-use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\OrderFactory;
 use Worldline\HostedCheckout\Service\HostedCheckout\GetHostedCheckoutStatusService;
 use Worldline\PaymentCore\Api\Data\OrderStateInterfaceFactory;
 use Worldline\PaymentCore\Api\Data\PaymentInterface;
+use Worldline\PaymentCore\Api\SessionDataManagerInterface;
+use Worldline\PaymentCore\Api\QuoteResourceInterface;
 use Worldline\PaymentCore\Model\Order\RejectOrderException;
 use Worldline\PaymentCore\Model\OrderState;
-use Worldline\PaymentCore\Model\ResourceModel\Quote as QuoteResource;
 
 /**
- * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  * @todo: this class should be refactored
  */
 class ReturnRequestProcessor
@@ -26,9 +25,9 @@ class ReturnRequestProcessor
     private const SUCCESSFUL_STATUS_CATEGORY = 'SUCCESSFUL';
 
     /**
-     * @var Session
+     * @var SessionDataManagerInterface
      */
-    private $checkoutSession;
+    private $sessionDataManager;
 
     /**
      * @var GetHostedCheckoutStatusService
@@ -36,7 +35,7 @@ class ReturnRequestProcessor
     private $getHostedCheckoutStatusService;
 
     /**
-     * @var QuoteResource
+     * @var QuoteResourceInterface
      */
     private $quoteResource;
 
@@ -61,15 +60,15 @@ class ReturnRequestProcessor
     private $addressSaveProcessor;
 
     public function __construct(
-        Session $checkoutSession,
+        SessionDataManagerInterface $sessionDataManager,
         GetHostedCheckoutStatusService $getHostedCheckoutStatusService,
-        QuoteResource $quoteResource,
+        QuoteResourceInterface $quoteResource,
         OrderFactory $orderFactory,
         PaymentInfoCleaner $paymentInfoCleaner,
         OrderStateInterfaceFactory $orderStateFactory,
         AddressSaveProcessor $addressSaveProcessor
     ) {
-        $this->checkoutSession = $checkoutSession;
+        $this->sessionDataManager = $sessionDataManager;
         $this->getHostedCheckoutStatusService = $getHostedCheckoutStatusService;
         $this->quoteResource = $quoteResource;
         $this->orderFactory = $orderFactory;
@@ -119,8 +118,7 @@ class ReturnRequestProcessor
 
         $order = $this->orderFactory->create()->loadByIncrementId($reservedOrderId);
         if (!$order->getId()) {
-            $this->checkoutSession->clearStorage();
-            $this->checkoutSession->setLastRealOrderId((string) $quote->getReservedOrderId());
+            $this->sessionDataManager->reserveOrder($reservedOrderId);
 
             $redirectPaymentMethodSpecificOutput = $response->getCreatedPaymentOutput()
                 ->getPayment()
@@ -139,10 +137,7 @@ class ReturnRequestProcessor
         }
 
         $orderState->setState(self::SUCCESS_STATE);
-        $this->checkoutSession->setLastOrderId((int) $order->getId());
-        $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
-        $this->checkoutSession->setLastQuoteId($order->getQuoteId());
-        $this->checkoutSession->setLastSuccessQuoteId($order->getQuoteId());
+        $this->sessionDataManager->setOrderData($order);
 
         return $orderState;
     }

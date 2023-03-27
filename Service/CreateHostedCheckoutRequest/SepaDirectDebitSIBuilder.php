@@ -3,18 +3,22 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Event\ManagerInterface;
 use Magento\Quote\Api\Data\CartInterface;
-use OnlinePayments\Sdk\Domain\CreateMandateRequest;
-use OnlinePayments\Sdk\Domain\CreateMandateRequestFactory;
 use OnlinePayments\Sdk\Domain\SepaDirectDebitPaymentMethodSpecificInputBase;
 use OnlinePayments\Sdk\Domain\SepaDirectDebitPaymentMethodSpecificInputBaseFactory;
 use OnlinePayments\Sdk\Domain\SepaDirectDebitPaymentProduct771SpecificInputBase;
 use OnlinePayments\Sdk\Domain\SepaDirectDebitPaymentProduct771SpecificInputBaseFactory;
+use Worldline\HostedCheckout\Api\Service\Mandates\MandateDataBuilderInterface;
+use Worldline\HostedCheckout\Api\TokenManagerInterface;
 use Worldline\HostedCheckout\Gateway\Config\Config;
+use Worldline\HostedCheckout\Ui\ConfigProvider;
+use Worldline\PaymentCore\Api\Data\PaymentProductsDetailsInterface;
 
-class SepaDirectDebitPaymentMethodSpecificInputBuilder
+class SepaDirectDebitSIBuilder
 {
+    public const HC_SEPA_SPECIFIC_INPUT = 'sepa_direct_debit_specific_input';
+
     /**
      * @var SepaDirectDebitPaymentMethodSpecificInputBaseFactory
      */
@@ -26,9 +30,9 @@ class SepaDirectDebitPaymentMethodSpecificInputBuilder
     private $debitPaymentProduct771SpecificInputBaseFactory;
 
     /**
-     * @var CreateMandateRequestFactory
+     * @var MandateDataBuilderInterface
      */
-    private $createMandateRequestFactory;
+    private $mandateDataBuilder;
 
     /**
      * @var Config
@@ -36,22 +40,29 @@ class SepaDirectDebitPaymentMethodSpecificInputBuilder
     private $config;
 
     /**
-     * @var ScopeConfigInterface
+     * @var TokenManagerInterface
      */
-    private $scopeConfig;
+    private $tokenManager;
+
+    /**
+     * @var ManagerInterface
+     */
+    private $eventManager;
 
     public function __construct(
         SepaDirectDebitPaymentMethodSpecificInputBaseFactory $debitPaymentMethodSpecificInputBaseFactory,
         SepaDirectDebitPaymentProduct771SpecificInputBaseFactory $debitPaymentProduct771SpecificInputBaseFactory,
-        CreateMandateRequestFactory $createMandateRequestFactory,
+        MandateDataBuilderInterface $mandateDataBuilder,
         Config $config,
-        ScopeConfigInterface $scopeConfig
+        TokenManagerInterface $tokenManager,
+        ManagerInterface $eventManager
     ) {
         $this->debitPaymentMethodSpecificInputBaseFactory = $debitPaymentMethodSpecificInputBaseFactory;
         $this->debitPaymentProduct771SpecificInputBaseFactory = $debitPaymentProduct771SpecificInputBaseFactory;
-        $this->createMandateRequestFactory = $createMandateRequestFactory;
+        $this->mandateDataBuilder = $mandateDataBuilder;
         $this->config = $config;
-        $this->scopeConfig = $scopeConfig;
+        $this->tokenManager = $tokenManager;
+        $this->eventManager = $eventManager;
     }
 
     public function build(CartInterface $quote): SepaDirectDebitPaymentMethodSpecificInputBase
@@ -62,19 +73,21 @@ class SepaDirectDebitPaymentMethodSpecificInputBuilder
         /** @var SepaDirectDebitPaymentProduct771SpecificInputBase $paymentProduct */
         $paymentProduct = $this->debitPaymentProduct771SpecificInputBaseFactory->create();
 
-        /** @var CreateMandateRequest $paymentProduct */
-        $mandate = $this->createMandateRequestFactory->create();
-
-        $mandate->setCustomerReference($quote->getReservedOrderId());
-        $mandate->setRecurrenceType($this->config->getDirectDebitRecurrenceType());
-        $mandate->setSignatureType($this->config->getDirectDebitSignatureType());
-
-        $locale = $this->scopeConfig->getValue('general/locale/code');
-        $mandate->setLanguage(strtoupper(substr($locale, 0, 2)));
-
-        $paymentProduct->setMandate($mandate);
+        if ($token = $this->tokenManager->getToken($quote)) {
+            if ($this->tokenManager->isSepaToken($token)) {
+                $paymentProduct->setExistingUniqueMandateReference($token->getGatewayToken());
+                $debitPaymentMethodSpecificInput->setPaymentProductId(
+                    PaymentProductsDetailsInterface::SEPA_DIRECT_DEBIT_PRODUCT_ID
+                );
+            }
+        } else {
+            $paymentProduct->setMandate($this->mandateDataBuilder->getMandate($quote, $this->config));
+        }
 
         $debitPaymentMethodSpecificInput->setPaymentProduct771SpecificInput($paymentProduct);
+
+        $args = ['quote' => $quote, self::HC_SEPA_SPECIFIC_INPUT => $debitPaymentMethodSpecificInput];
+        $this->eventManager->dispatch(ConfigProvider::HC_CODE . '_sepa_direct_debit_specific_input_builder', $args);
 
         return $debitPaymentMethodSpecificInput;
     }

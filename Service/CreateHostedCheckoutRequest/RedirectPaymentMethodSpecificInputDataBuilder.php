@@ -33,6 +33,7 @@ class RedirectPaymentMethodSpecificInputDataBuilder
         $redirectPaymentMethodSpecificInput = $this->redirectPaymentMethodSpecificInputFactory->create();
         $authMode = $this->config->getAuthorizationMode();
         $redirectPaymentMethodSpecificInput->setRequiresApproval($authMode !== Config::AUTHORIZATION_MODE_SALE);
+        $redirectPaymentMethodSpecificInput->setPaymentOption('W3999');
 
         return $redirectPaymentMethodSpecificInput;
     }

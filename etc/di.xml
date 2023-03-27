@@ -5,6 +5,10 @@
                 for="Worldline\HostedCheckout\Api\Service\HostedCheckout\GetHostedCheckoutStatusServiceInterface" />
     <preference type="Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutService"
                 for="Worldline\HostedCheckout\Api\Service\HostedCheckout\CreateHostedCheckoutServiceInterface" />
+    <preference type="Worldline\HostedCheckout\Model\TokenManager"
+                for="Worldline\HostedCheckout\Api\TokenManagerInterface" />
+    <preference type="Worldline\HostedCheckout\Service\Mandates\MandateDataBuilder"
+                for="Worldline\HostedCheckout\Api\Service\Mandates\MandateDataBuilderInterface" />
 
     <type name="Worldline\HostedCheckout\WebApi\RedirectManagement">
         <arguments>
@@ -18,6 +22,7 @@
                 <item name="payment-data" xsi:type="object">Worldline\HostedCheckout\WebApi\RedirectManagement\PaymentMethodDataAssigner</item>
                 <item name="token-data" xsi:type="object">Worldline\PaymentCore\Model\DataAssigner\TokenDataAssigner</item>
                 <item name="create-payment-data" xsi:type="object">Worldline\HostedCheckout\WebApi\RedirectManagement\CreatePaymentDataAssigner</item>
+                <item name="create-vault-payment-data" xsi:type="object">Worldline\HostedCheckout\WebApi\RedirectManagement\CreateVaultPaymentDataAssigner</item>
             </argument>
         </arguments>
     </virtualType>
@@ -45,6 +50,7 @@
             <argument name="handlers" xsi:type="array">
                 <item name="bancontact" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\BancontactHandler\Proxy</item>
                 <item name="intersolve" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\IntersolveHandler\Proxy</item>
+                <item name="sepa_direct_debit" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\SepaDirectDebitHandler\Proxy</item>
             </argument>
         </arguments>
     </type>
@@ -81,6 +87,22 @@
             <argument name="returnUrls" xsi:type="array">
                 <item name="worldline_hosted_checkout" xsi:type="string">wl_hostedcheckout/returns/returnUrl</item>
                 <item name="worldline_hosted_checkout_vault" xsi:type="string">wl_hostedcheckout/returns/returnUrl</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Worldline\PaymentCore\Model\Webhook\GeneralProcessor">
+        <arguments>
+            <argument name="customProcessorStrategies" xsi:type="array">
+                <item name="sepa_capture_strategy" xsi:type="object">Worldline\HostedCheckout\Model\Webhook\SepaCustomProcessorStrategy\Proxy</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Worldline\PaymentCore\Model\Checkout\ConfigProvider">
+        <arguments>
+            <argument name="allowedPaymentMethods" xsi:type="array">
+                <item name="worldline_hosted_checkout" xsi:type="const">Worldline\HostedCheckout\Ui\ConfigProvider::HC_CODE</item>
             </argument>
         </arguments>
     </type>
@@ -225,7 +247,7 @@
             <argument name="requestBuilder" xsi:type="object">Worldline\HostedCheckout\Gateway\Request\AuthorizeBuilder\Virtual</argument>
             <argument name="transferFactory" xsi:type="object">Worldline\PaymentCore\Gateway\Http\TransferFactory</argument>
             <argument name="client" xsi:type="object">Worldline\HostedCheckout\Gateway\Http\Client\TransactionSale</argument>
-            <argument name="handler" xsi:type="object">Worldline\HostedCheckout\Gateway\Response\HandlerChain\Authorization\Virtual</argument>
+            <argument name="handler" xsi:type="object">Worldline\HostedCheckout\Gateway\Response\HandlerChain\Authorization\Vault\Virtual</argument>
             <argument name="validator" xsi:type="object">Worldline\HostedCheckout\Gateway\Validator\AmountResponseValidator</argument>
         </arguments>
     </virtualType>
@@ -271,6 +293,16 @@
                 <item name="payment_details" xsi:type="string">Worldline\HostedCheckout\Gateway\Response\PaymentDetailsHandler</item>
                 <item name="txn_id" xsi:type="string">Worldline\HostedCheckout\Gateway\Response\TransactionIdHandler</item>
                 <item name="vault_details" xsi:type="string">Worldline\HostedCheckout\Gateway\Response\VaultDetailsHandler</item>
+                <item name="sepa_vault_details" xsi:type="string">Worldline\HostedCheckout\Gateway\Response\SepaVaultDetailsHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Worldline\HostedCheckout\Gateway\Response\HandlerChain\Authorization\Vault\Virtual" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="payment_details" xsi:type="string">Worldline\HostedCheckout\Gateway\Response\PaymentDetailsHandler</item>
+                <item name="txn_id" xsi:type="string">Worldline\HostedCheckout\Gateway\Response\TransactionIdHandler</item>
+                <item name="update_vault_expiration_date" xsi:type="string">Worldline\HostedCheckout\Gateway\Response\UpdateSepaVaultExpirationDateHandler</item>
             </argument>
         </arguments>
     </virtualType>
