@@ -17,6 +17,10 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.8.1
+- Add backend address validation before payments.
+- General code improvements and bug fixes.
+
 #### 1.8.0
 - Add surcharge functionality (for the Australian market).
 - Add Sepa Direct Debit payment method.
