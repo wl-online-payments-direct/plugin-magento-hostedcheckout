@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.8.2
+- Add fix for Adobe Commerce cloud instances.
+
 #### 1.8.1
 - Add backend address validation before payments.
 - General code improvements and bug fixes.
