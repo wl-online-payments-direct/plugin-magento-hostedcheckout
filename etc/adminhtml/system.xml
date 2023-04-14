@@ -202,6 +202,14 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
+                <field id="oney3x4x_payment_option" translate="label tooltip" type="text" sortOrder="250" showInDefault="1" showInWebsite="1">
+                    <label>Oney3x4x payment option</label>
+                    <config_path>payment/worldline_hosted_checkout/oney3x4x_payment_option</config_path>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                    <tooltip>Configure your payment option as defined on your Oney 3x4x contract. You can find the value directly from your Oney interface.</tooltip>
+                </field>
             </group>
         </section>
     </system>

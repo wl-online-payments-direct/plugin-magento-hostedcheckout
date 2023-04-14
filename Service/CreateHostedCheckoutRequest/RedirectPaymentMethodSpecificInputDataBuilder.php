@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest;
 
+use Magento\Quote\Api\Data\CartInterface;
 use OnlinePayments\Sdk\Domain\RedirectPaymentMethodSpecificInput;
 use OnlinePayments\Sdk\Domain\RedirectPaymentMethodSpecificInputFactory;
 use Worldline\HostedCheckout\Gateway\Config\Config;
@@ -27,13 +28,14 @@ class RedirectPaymentMethodSpecificInputDataBuilder
         $this->redirectPaymentMethodSpecificInputFactory = $redirectPaymentMethodSpecificInputFactory;
     }
 
-    public function build()
+    public function build(CartInterface $quote): RedirectPaymentMethodSpecificInput
     {
+        $storeId = (int)$quote->getStoreId();
         /** @var RedirectPaymentMethodSpecificInput $redirectPaymentMethodSpecificInput */
         $redirectPaymentMethodSpecificInput = $this->redirectPaymentMethodSpecificInputFactory->create();
-        $authMode = $this->config->getAuthorizationMode();
+        $authMode = $this->config->getAuthorizationMode($storeId);
         $redirectPaymentMethodSpecificInput->setRequiresApproval($authMode !== Config::AUTHORIZATION_MODE_SALE);
-        $redirectPaymentMethodSpecificInput->setPaymentOption('W3999');
+        $redirectPaymentMethodSpecificInput->setPaymentOption($this->config->getOneyPaymentOption($storeId));
 
         return $redirectPaymentMethodSpecificInput;
     }

@@ -4,35 +4,26 @@ declare(strict_types=1);
 namespace Worldline\HostedCheckout\Model;
 
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Api\Data\CartInterface;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\OrderFactory;
-use Worldline\HostedCheckout\Service\HostedCheckout\GetHostedCheckoutStatusService;
-use Worldline\PaymentCore\Api\Data\OrderStateInterfaceFactory;
-use Worldline\PaymentCore\Api\Data\PaymentInterface;
-use Worldline\PaymentCore\Api\SessionDataManagerInterface;
+use OnlinePayments\Sdk\Domain\GetHostedCheckoutResponse;
+use Worldline\PaymentCore\Api\OrderStateManagerInterface;
 use Worldline\PaymentCore\Api\QuoteResourceInterface;
+use Worldline\PaymentCore\Api\SessionDataManagerInterface;
 use Worldline\PaymentCore\Model\Order\RejectOrderException;
-use Worldline\PaymentCore\Model\OrderState;
+use Worldline\PaymentCore\Model\OrderState\OrderState;
 
-/**
- * @todo: this class should be refactored
- */
 class ReturnRequestProcessor
 {
     public const SUCCESS_STATE = 'success';
     public const WAITING_STATE = 'waiting';
     public const FAIL_STATE = 'fail';
 
-    private const SUCCESSFUL_STATUS_CATEGORY = 'SUCCESSFUL';
-
     /**
      * @var SessionDataManagerInterface
      */
     private $sessionDataManager;
-
-    /**
-     * @var GetHostedCheckoutStatusService
-     */
-    private $getHostedCheckoutStatusService;
 
     /**
      * @var QuoteResourceInterface
@@ -45,36 +36,27 @@ class ReturnRequestProcessor
     private $orderFactory;
 
     /**
-     * @var PaymentInfoCleaner
+     * @var OrderStateManagerInterface
      */
-    private $paymentInfoCleaner;
+    private $orderStateManager;
 
     /**
-     * @var OrderStateInterfaceFactory
+     * @var SuccessTransactionChecker
      */
-    private $orderStateFactory;
-
-    /**
-     * @var AddressSaveProcessor
-     */
-    private $addressSaveProcessor;
+    private $successTransactionChecker;
 
     public function __construct(
         SessionDataManagerInterface $sessionDataManager,
-        GetHostedCheckoutStatusService $getHostedCheckoutStatusService,
         QuoteResourceInterface $quoteResource,
         OrderFactory $orderFactory,
-        PaymentInfoCleaner $paymentInfoCleaner,
-        OrderStateInterfaceFactory $orderStateFactory,
-        AddressSaveProcessor $addressSaveProcessor
+        OrderStateManagerInterface $orderStateManager,
+        SuccessTransactionChecker $successTransactionChecker
     ) {
         $this->sessionDataManager = $sessionDataManager;
-        $this->getHostedCheckoutStatusService = $getHostedCheckoutStatusService;
         $this->quoteResource = $quoteResource;
         $this->orderFactory = $orderFactory;
-        $this->paymentInfoCleaner = $paymentInfoCleaner;
-        $this->orderStateFactory = $orderStateFactory;
-        $this->addressSaveProcessor = $addressSaveProcessor;
+        $this->orderStateManager = $orderStateManager;
+        $this->successTransactionChecker = $successTransactionChecker;
     }
 
     /**
@@ -92,53 +74,47 @@ class ReturnRequestProcessor
 
         $quote = $this->quoteResource->getQuoteByWorldlinePaymentId($paymentId);
 
-        try {
-            $response = $this->getHostedCheckoutStatusService->execute($paymentId, (int)$quote->getStoreId());
-        } catch (LocalizedException $e) {
-            throw new LocalizedException(__('The payment has failed, please, try again'));
-        }
-
-        /** @var OrderState $orderState */
-        $orderState = $this->orderStateFactory->create();
-        if (self::SUCCESSFUL_STATUS_CATEGORY !== $response->getCreatedPaymentOutput()->getPaymentStatusCategory()) {
-            $quote->setIsActive(true);
-            $this->addressSaveProcessor->saveAddress($quote);
-            $this->paymentInfoCleaner->clean($quote);
-            throw new RejectOrderException(__('The payment has rejected, please, try again'));
-        }
-
-        $payment = $quote->getPayment();
-        if ($payment->getAdditionalInformation('return_id') !== $returnId) {
-            throw new LocalizedException(__('Wrong return id'));
-        }
+        $response = $this->successTransactionChecker->check($quote, $paymentId, $returnId);
 
         $reservedOrderId = (string)$quote->getReservedOrderId();
-        $orderState->setIncrementId($reservedOrderId);
-        $orderState->setPaymentMethod((string)$payment->getMethod());
-
         $order = $this->orderFactory->create()->loadByIncrementId($reservedOrderId);
         if (!$order->getId()) {
-            $this->sessionDataManager->reserveOrder($reservedOrderId);
-
-            $redirectPaymentMethodSpecificOutput = $response->getCreatedPaymentOutput()
-                ->getPayment()
-                ->getPaymentOutput()
-                ->getRedirectPaymentMethodSpecificOutput();
-
-            if ($redirectPaymentMethodSpecificOutput) {
-                $paymentProductId = (int) $redirectPaymentMethodSpecificOutput->getPaymentProductId();
-                $this->quoteResource->setPaymentIdAndSave($quote, $paymentProductId);
-                $orderState->setPaymentProductId($paymentProductId);
-            }
-
-            $orderState->setState(self::WAITING_STATE);
-
-            return $orderState;
+            return $this->processWaitingState($quote, $response);
         }
 
-        $orderState->setState(self::SUCCESS_STATE);
-        $this->sessionDataManager->setOrderData($order);
+        return $this->processSuccessState($quote, $order);
+    }
+
+    private function processWaitingState(CartInterface $quote, GetHostedCheckoutResponse $response): OrderState
+    {
+        $reservedOrderId = (string)$quote->getReservedOrderId();
+        $this->sessionDataManager->reserveOrder($reservedOrderId);
+        $paymentCode = (string)$quote->getPayment()->getMethod();
+
+        $orderState = $this->orderStateManager->create($reservedOrderId, $paymentCode, self::WAITING_STATE);
+
+        $redirectPaymentMethodSpecificOutput = $response->getCreatedPaymentOutput()
+            ->getPayment()
+            ->getPaymentOutput()
+            ->getRedirectPaymentMethodSpecificOutput();
+
+        if ($redirectPaymentMethodSpecificOutput) {
+            $paymentProductId = (int) $redirectPaymentMethodSpecificOutput->getPaymentProductId();
+            $this->quoteResource->setPaymentIdAndSave($quote, $paymentProductId);
+            $orderState->setPaymentProductId($paymentProductId);
+        }
 
         return $orderState;
+    }
+
+    private function processSuccessState(CartInterface $quote, OrderInterface $order): OrderState
+    {
+        $this->sessionDataManager->setOrderData($order);
+
+        return $this->orderStateManager->create(
+            (string)$quote->getReservedOrderId(),
+            (string)$quote->getPayment()->getMethod(),
+            self::SUCCESS_STATE
+        );
     }
 }
