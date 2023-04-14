@@ -66,7 +66,7 @@ class CreateHostedCheckoutRequestBuilder
         $createHostedCheckoutRequest->setOrder($this->orderDataBuilder->build($quote));
         $createHostedCheckoutRequest->setHostedCheckoutSpecificInput($this->specificInputDataBuilder->build($quote));
         $createHostedCheckoutRequest->setRedirectPaymentMethodSpecificInput(
-            $this->redirectPaymentMethodSpecificInputDataBuilder->build()
+            $this->redirectPaymentMethodSpecificInputDataBuilder->build($quote)
         );
         $createHostedCheckoutRequest->setCardPaymentMethodSpecificInput(
             $this->cardPaymentMethodSIDBuilder->build($quote)

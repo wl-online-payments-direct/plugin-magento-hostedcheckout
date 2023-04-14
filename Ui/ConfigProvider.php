@@ -75,11 +75,14 @@ class ConfigProvider implements ConfigProviderInterface
                 'payment' => [
                     self::HC_CODE => [
                         'isActive' => $this->config->isActive($storeId),
-                        'icons' => $this->getIcons($storeId),
-                        'hcVaultCode' => self::HC_VAULT_CODE
+                        'icons' => $this->getIcons($storeId)
                     ]
                 ]
             ];
+
+            if ($this->config->isVaultActive($storeId)) {
+                $result['payment'][self::HC_CODE]['hcVaultCode'] = self::HC_VAULT_CODE;
+            }
 
             return $result;
         } catch (LocalizedException $e) {

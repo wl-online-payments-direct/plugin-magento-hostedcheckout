@@ -12,7 +12,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Worldline\HostedCheckout\Model\ReturnRequestProcessor;
 use Worldline\PaymentCore\Model\Order\RejectOrderException;
-use Worldline\PaymentCore\Model\OrderState;
+use Worldline\PaymentCore\Model\OrderState\OrderState;
 use Magento\Quote\Api\CartRepositoryInterface;
 
 class ReturnUrlForVault extends Action implements HttpGetActionInterface

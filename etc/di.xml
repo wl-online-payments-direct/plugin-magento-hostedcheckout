@@ -45,6 +45,11 @@
                 type="Worldline\HostedCheckout\Plugin\Worldline\PaymentCore\ViewModel\PendingPaymentPageDataProvider\ChangeMessagePostfix"/>
     </type>
 
+    <type name="Worldline\HostedCheckout\Service\HostedCheckout\GetHostedCheckoutStatusService">
+        <plugin name="Worldline_HostedCheckout::test_infrastructure_get_hosted_checkout_status_service"
+                type="Worldline\HostedCheckout\Infrastructure\Plugin\Service\HostedCheckout\GetHostedCheckoutStatusServiceMock"/>
+    </type>
+
     <type name="Worldline\HostedCheckout\Plugin\Magento\Payment\Model\Method\Adapter\ReplacePaymentAction">
         <arguments>
             <argument name="handlers" xsi:type="array">

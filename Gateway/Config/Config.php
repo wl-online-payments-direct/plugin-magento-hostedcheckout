@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Gateway\Config;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Gateway\Config\Config as PaymentGatewayConfig;
+use Magento\Store\Model\ScopeInterface;
+use Worldline\HostedCheckout\Ui\ConfigProvider;
 
 class Config extends PaymentGatewayConfig
 {
@@ -18,9 +21,26 @@ class Config extends PaymentGatewayConfig
     public const KEY_CART_LINES = 'cart_lines';
     public const ENABLE_GROUP_CARDS = 'enable_group_cards';
     public const PROCESS_MEALVOUCHERS = 'process_mealvouchers';
+    public const ONEY_PAYMENT_OPTION = 'oney3x4x_payment_option';
 
     public const DIRECT_DEBIT_RECURRENCE_TYPE = 'direct_debit_recurrence_type';
     public const DIRECT_DEBIT_SIGNATURE_TYPE = 'direct_debit_signature_type';
+
+    public const VAULT_PATH = 'payment/worldline_hosted_checkout_vault/active';
+
+    /**
+     * @var ScopeConfigInterface
+     */
+    private $scopeConfig;
+
+    public function __construct(
+        ScopeConfigInterface $scopeConfig,
+        $methodCode = ConfigProvider::HC_CODE,
+        $pathPattern = PaymentGatewayConfig::DEFAULT_PATH_PATTERN
+    ) {
+        parent::__construct($scopeConfig, $methodCode, $pathPattern);
+        $this->scopeConfig = $scopeConfig;
+    }
 
     public function getAuthorizationMode(?int $storeId = null): string
     {
@@ -70,5 +90,15 @@ class Config extends PaymentGatewayConfig
     public function isProcessMealvouchers(?int $storeId = null): bool
     {
         return (bool) $this->getValue(self::PROCESS_MEALVOUCHERS, $storeId);
+    }
+
+    public function getOneyPaymentOption(?int $storeId = null): string
+    {
+        return (string) $this->getValue(self::ONEY_PAYMENT_OPTION, $storeId);
+    }
+
+    public function isVaultActive(?int $storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(self::VAULT_PATH, ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

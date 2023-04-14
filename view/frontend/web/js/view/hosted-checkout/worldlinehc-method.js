@@ -44,8 +44,14 @@ define([
          * @returns {Object}
          */
         getAvailableTypes: function () {
-            let availableTypes = window.checkoutConfig.payment[this.getCode()].icons;
+            let availableTypes = window.checkoutConfig.payment[this.getCode()].icons,
+                applePayCode = 302;
             if (availableTypes && availableTypes instanceof Object) {
+                if (availableTypes[applePayCode]) {
+                    if (!window.ApplePaySession) {
+                        delete availableTypes[applePayCode];
+                    }
+                }
                 return Object.keys(availableTypes);
             }
 

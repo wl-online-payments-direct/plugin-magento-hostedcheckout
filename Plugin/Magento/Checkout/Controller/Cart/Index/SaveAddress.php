@@ -7,9 +7,9 @@ use Magento\Checkout\Controller\Index\Index;
 use Magento\Framework\Exception\LocalizedException;
 use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
 use Worldline\HostedCheckout\Model\AddressSaveProcessor;
-use Worldline\HostedCheckout\Model\PaymentInfoCleaner;
 use Worldline\HostedCheckout\Service\HostedCheckout\GetHostedCheckoutStatusService;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
+use Worldline\PaymentCore\Api\PaymentInfoCleanerInterface;
 
 /**
  * This plugin is needed to save shipping and/or billing addresses in case of return from the hosted checkout page
@@ -29,14 +29,14 @@ class SaveAddress
     private $hcRequest;
 
     /**
-     * @var PaymentInfoCleaner
+     * @var PaymentInfoCleanerInterface
      */
     private $paymentInfoCleaner;
 
     public function __construct(
         AddressSaveProcessor $addressSaveProcessor,
         GetHostedCheckoutStatusService $hcRequest,
-        PaymentInfoCleaner $paymentInfoCleaner
+        PaymentInfoCleanerInterface $paymentInfoCleaner
     ) {
         $this->addressSaveProcessor = $addressSaveProcessor;
         $this->hcRequest = $hcRequest;
