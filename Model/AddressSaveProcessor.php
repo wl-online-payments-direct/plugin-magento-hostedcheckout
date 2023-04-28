@@ -58,11 +58,11 @@ class AddressSaveProcessor
     {
         $this->quote = $quote;
         $customerId = $this->quote->getCustomerId();
-        
+
         if ($customerId === null) {
             return;
         }
-        
+
         $customer = $this->customerRepository->getById($customerId);
         $this->hasDefaultAddress = [
             self::TYPE_SHIPPING => (bool)$customer->getDefaultShipping(),
@@ -76,9 +76,11 @@ class AddressSaveProcessor
             $this->processAddressFor(self::TYPE_SHIPPING, $shipping);
         }
 
-        $this->processAddressFor(self::TYPE_BILLING, $billing);
+        if ($billing) {
+            $this->processAddressFor(self::TYPE_BILLING, $billing);
+        }
 
-        if ($shipping && !$shipping->getCustomerId() && !$this->hasDefaultAddress[self::TYPE_BILLING]) {
+        if (!$this->hasDefaultAddress[self::TYPE_BILLING] && $shipping && !$shipping->getCustomerId()) {
             $shipping->setIsDefaultBilling(true);
         }
     }
@@ -102,7 +104,7 @@ class AddressSaveProcessor
         }
     }
 
-    private function processAddressByType(int $type, CustomerAddressInterface $customerAddress)
+    private function processAddressByType(int $type, CustomerAddressInterface $customerAddress): void
     {
         if ($type === self::TYPE_BILLING) {
             if (!$this->hasDefaultAddress[self::TYPE_SHIPPING]) {

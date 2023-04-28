@@ -16,7 +16,8 @@ class GetHostedCheckoutServiceResponse
             '3254564312' => static::getHostedCheckoutResponseWithBundle($hostedCheckoutId, $incrementId),
             '3254564313' => static::getHostedCheckoutResponseWithConfigurable($hostedCheckoutId, $incrementId),
             '3254564314' => static::getHostedCheckoutResponseWithVirtual($hostedCheckoutId, $incrementId),
-            '3254564315' => static::getErrorHostedCheckoutResponse($hostedCheckoutId, $incrementId)
+            '3254564315' => static::getErrorHostedCheckoutResponse($hostedCheckoutId, $incrementId),
+            '3254564316' => static::getHostedCheckoutResponseWithSurcharging($hostedCheckoutId, $incrementId)
         ];
 
         return $responsePool[$hostedCheckoutId] ?? '{}';
@@ -460,6 +461,90 @@ DATA;
         "paymentStatusCategory": "REJECTED"
     },
     "status": "CANCELLED_BY_CONSUMER"
+}
+DATA;
+    }
+
+    public static function getHostedCheckoutResponseWithSurcharging(
+        string $hostedCheckoutId,
+        string $incrementId = 'test01'
+    ): string {
+        return <<<DATA
+{
+    "createdPaymentOutput": {
+        "payment": {
+            "hostedCheckoutSpecificOutput": {
+                "hostedCheckoutId": "$hostedCheckoutId"
+            },
+            "id": "3254564316",
+            "paymentOutput": {
+                "acquiredAmount": {
+                    "amount": 1500,
+                    "currencyCode": "EUR"
+                },
+                "amountOfMoney": {
+                    "amount": 1500,
+                    "currencyCode": "EUR"
+                },
+                "surchargeSpecificOutput":{
+                    "surchargeAmount":{
+                        "amount":1000,
+                        "currencyCode":"EUR"
+                    }
+                },
+                "cardPaymentMethodSpecificOutput": {
+                    "authorisationCode": "1846132702",
+                    "card": {
+                        "bin": "424242",
+                        "cardNumber": "************4242",
+                        "countryCode": "99",
+                        "expiryDate": "0523"
+                    },
+                    "token": "a4ef6af2-b66d-49b4-b121-7fef47f9f7ce",
+                    "fraudResults": {
+                        "avsResult": "0",
+                        "cvvResult": "0",
+                        "fraudServiceResult": "accepted"
+                    },
+                    "paymentProductId": 1,
+                    "threeDSecureResults": {
+                        "acsTransactionId": "A4DCDBC9-98CB-450D-9535-3D6BED79C2A5",
+                        "authenticationStatus": "Y",
+                        "cavv": "kANnMdSX47pGwDsg15UKaJeB6eJl",
+                        "challengeIndicator": "no-challenge-requested",
+                        "dsTransactionId": "D7B76870-0765-4F36-A9F1-C5B23D35D3E2",
+                        "eci": "5",
+                        "exemptionEngineFlow":
+                         "low-value-not-applicable-sca-requested-challenge-indicator-no-challenge-requested",
+                        "flow": "challenge",
+                        "liability": "issuer",
+                        "schemeEci": "05",
+                        "version": "2.2.0",
+                        "xid": "MzI2NDU5MDAyNg=="
+                    }
+                },
+                "customer": {
+                    "device": {
+                        "ipAddressCountryCode": "99"
+                    }
+                },
+                "paymentMethod": "card",
+                "references": {
+                    "merchantReference": "$incrementId"
+                }
+            },
+            "status": "CAPTURED",
+            "statusOutput": {
+                "isAuthorized": false,
+                "isCancellable": false,
+                "isRefundable": true,
+                "statusCategory": "COMPLETED",
+                "statusCode": 9
+            }
+        },
+        "paymentStatusCategory": "SUCCESSFUL"
+    },
+    "status": "PAYMENT_CREATED"
 }
 DATA;
     }

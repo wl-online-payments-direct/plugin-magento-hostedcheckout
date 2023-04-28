@@ -30,10 +30,10 @@ class ReplacePaymentAction
      *
      * @param Adapter $subject
      * @param string|null $result
-     * @return strings
+     * @return string|null
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function afterGetConfigPaymentAction(Adapter $subject, $result = null): ?string
+    public function afterGetConfigPaymentAction(Adapter $subject, ?string $result = null): ?string
     {
         if (!$payment = $this->orderPaymentContainer->getPayment()) {
             return $result;
@@ -45,7 +45,7 @@ class ReplacePaymentAction
             }
 
             if ($paymentAction = $handler->getPaymentAction($payment)) {
-                return (string) $paymentAction;
+                return $paymentAction;
             }
         }
 

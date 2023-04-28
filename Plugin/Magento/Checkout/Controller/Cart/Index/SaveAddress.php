@@ -46,6 +46,10 @@ class SaveAddress
     public function beforeExecute(Index $subject): void
     {
         $quote = $subject->getOnepage()->getQuote();
+        if (!$quote) {
+            return;
+        }
+
         $payment = $quote->getPayment();
 
         if (!$payment
@@ -58,11 +62,12 @@ class SaveAddress
         try {
             $hcResponse = $this->hcRequest->execute($hcId, (int)$quote->getStoreId());
             $worldlinePayment = $hcResponse->getCreatedPaymentOutput()->getPayment();
+            if ($worldlinePayment->getStatus() === self::REJECTED) {
+                $this->addressSaveProcessor->saveAddress($quote);
+                $this->paymentInfoCleaner->clean($quote);
+            }
         } catch (LocalizedException $e) {
-            ; //expected behavior when customer presses go back button in their browser at the HC page
-        }
-
-        if (empty($worldlinePayment) || $worldlinePayment->getStatus() == self::REJECTED) {
+            //expected behavior when customer presses go back button in their browser at the HC page
             $this->addressSaveProcessor->saveAddress($quote);
             $this->paymentInfoCleaner->clean($quote);
         }

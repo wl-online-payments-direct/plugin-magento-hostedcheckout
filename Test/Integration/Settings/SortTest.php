@@ -54,7 +54,7 @@ class SortTest extends TestCase
         $paymentMethods = $this->methodList->getAvailableMethods($quote);
         $hcPaymentMethod = $this->getHCPaymentMethod($paymentMethods);
 
-        $this->assertTrue($hcPaymentMethod instanceof MethodInterface);
+        $this->assertInstanceOf(MethodInterface::class, $hcPaymentMethod);
 
         $valid = true;
 

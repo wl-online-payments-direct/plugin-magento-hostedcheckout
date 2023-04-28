@@ -1,21 +1,25 @@
 <?php
 declare(strict_types=1);
 
-namespace Worldline\HostedCheckout\Test\Integration\Settings;
+namespace Worldline\HostedCheckout\Test\Integration\Payment;
 
 use Magento\Quote\Api\Data\CartInterface;
+use Magento\Sales\Api\Data\OrderInterfaceFactory;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
+use Worldline\HostedCheckout\Gateway\Config\Config;
 use Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\CardPaymentMethodSIDBuilder;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
+use Worldline\PaymentCore\Api\PaymentRepositoryInterface;
 use Worldline\PaymentCore\Api\QuoteResourceInterface;
 use Worldline\PaymentCore\Api\Test\Infrastructure\ServiceStubSwitcherInterface;
+use Worldline\PaymentCore\Api\Test\Infrastructure\WebhookStubSenderInterface;
+use Worldline\PaymentCore\Infrastructure\StubData\Webhook\AuthorizationWithIntersolve;
 
 /**
- * Test case for configurations:
- * "Enable 3-D Secure Authentication" and "Enforce Strong Customer Authentication for Every Payment"
+ * Test cases for Intersolve payment product
  */
-class ThreeDSecureTest extends TestCase
+class PlaceOrderWithIntersolveTest extends TestCase
 {
     /**
      * @var CardPaymentMethodSIDBuilder
@@ -23,15 +27,33 @@ class ThreeDSecureTest extends TestCase
     private $cardPaymentMethodSIDBuilder;
 
     /**
+     * @var  WebhookStubSenderInterface
+     */
+    private $webhookStubSender;
+
+    /**
+     * @var OrderInterfaceFactory
+     */
+    private $orderFactory;
+
+    /**
      * @var QuoteResourceInterface
      */
     private $quoteExtendedRepository;
+
+    /**
+     * @var PaymentRepositoryInterface
+     */
+    private $paymentRepository;
 
     public function setUp(): void
     {
         $objectManager = Bootstrap::getObjectManager();
         $this->cardPaymentMethodSIDBuilder = $objectManager->get(CardPaymentMethodSIDBuilder::class);
+        $this->webhookStubSender = $objectManager->get(WebhookStubSenderInterface::class);
+        $this->orderFactory = $objectManager->get(OrderInterfaceFactory::class);
         $this->quoteExtendedRepository = $objectManager->get(QuoteResourceInterface::class);
+        $this->paymentRepository = $objectManager->get(PaymentRepositoryInterface::class);
         $objectManager->get(ServiceStubSwitcherInterface::class)->setEnabled(true);
     }
 
@@ -41,37 +63,46 @@ class ThreeDSecureTest extends TestCase
      * @magentoConfigFixture default/currency/options/allow EUR
      * @magentoConfigFixture default/currency/options/base EUR
      * @magentoConfigFixture default/currency/options/default EUR
+     * @magentoConfigFixture default/sales_email/general/async_sending 0
      * @magentoConfigFixture current_store payment/worldline_hosted_checkout/active 1
      * @magentoConfigFixture current_store payment/worldline_hosted_checkout/payment_action authorize
      * @magentoConfigFixture current_store payment/worldline_hosted_checkout/authorization_mode final
-     * @magentoConfigFixture current_store worldline_payment/general_settings/enable_3d 1
-     * @magentoConfigFixture current_store worldline_payment/general_settings/enforce_authentication 1
      * @magentoConfigFixture current_store worldline_connection/webhook/key test-X-Gcs-Keyid
      * @magentoConfigFixture current_store worldline_connection/webhook/secret_key test-X-Gcs-Signature
      */
-    public function testThreeDSecure(): void
+    public function testAuthorizeAndCaptureIntersolve(): void
     {
         $quote = $this->getQuote();
         $cardPaymentMethodSpecificInput = $this->cardPaymentMethodSIDBuilder->build($quote);
-
-        $this->assertNotFalse(
-            strpos(
-                $cardPaymentMethodSpecificInput->getThreeDSecure()->getRedirectionData()->getReturnUrl(),
-                'wl_hostedcheckout/returns/returnUrl'
-            )
-        );
-
-        $this->assertFalse($cardPaymentMethodSpecificInput->getThreeDSecure()->getSkipAuthentication());
         $this->assertEquals(
-            'challenge-required',
-            $cardPaymentMethodSpecificInput->getThreeDSecure()->getChallengeIndicator()
+            Config::AUTHORIZATION_MODE_FINAL,
+            $cardPaymentMethodSpecificInput->getAuthorizationMode()
         );
+
+        $this->paymentRepository->deleteByIncrementId('test01');
+
+        // send the webhook and place the order
+        $result = $this->webhookStubSender->sendWebhook(
+            AuthorizationWithIntersolve::getData($quote->getReservedOrderId())
+        );
+
+        // validate controller result
+        $reflectedResult = new \ReflectionObject($result);
+        $jsonProperty = $reflectedResult->getProperty('json');
+        $jsonProperty->setAccessible(true);
+        $this->assertEquals('{"messages":[],"error":false}', $jsonProperty->getValue($result));
+
+        // validate created order
+        $order = $this->orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
+        $this->assertTrue((bool) $order->getId());
+        $this->assertEquals('processing', $order->getStatus());
+        $this->assertEquals(ConfigProvider::HC_CODE, $order->getPayment()->getMethod());
+        $this->assertCount(1, $order->getInvoiceCollection()->getItems());
     }
 
     private function getQuote(): CartInterface
     {
         $quote = $this->quoteExtendedRepository->getQuoteByReservedOrderId('test01');
-        $quote->setReservedOrderId('test02');
         $quote->getPayment()->setMethod(ConfigProvider::HC_CODE);
         $quote->getShippingAddress()->setShippingMethod('flatrate_flatrate');
         $quote->getShippingAddress()->setCollectShippingRates(true);

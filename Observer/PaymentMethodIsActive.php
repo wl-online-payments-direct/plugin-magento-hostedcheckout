@@ -5,6 +5,7 @@ namespace Worldline\HostedCheckout\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Payment\Model\Method\Adapter;
 use Worldline\HostedCheckout\Gateway\Config\Config;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
 use Worldline\PaymentCore\Api\AvailableMethodCheckerInterface;
@@ -31,13 +32,13 @@ class PaymentMethodIsActive implements ObserverInterface
 
     public function execute(Observer $observer): void
     {
-        /** @var \Magento\Payment\Model\Method\Adapter $methodInstance */
+        /** @var Adapter $methodInstance */
         $methodInstance = $observer->getMethodInstance();
         $quote = $observer->getQuote();
         if ($methodInstance === null
             || $quote === null
-            || !$observer->getResult()->getIsAvailable()
             || $methodInstance->getCode() !== ConfigProvider::HC_CODE
+            || !$observer->getResult()->getIsAvailable()
             || !$this->config->isActive()
         ) {
             return;

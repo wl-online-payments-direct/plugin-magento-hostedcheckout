@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Worldline\HostedCheckout\Test\Integration\Payment;
 
 use Magento\Quote\Api\Data\CartInterface;
-use Magento\Sales\Api\Data\OrderInterfaceFactory;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
+use Worldline\PaymentCore\Api\FraudRepositoryInterface;
 use Worldline\PaymentCore\Api\PaymentRepositoryInterface;
 use Worldline\PaymentCore\Api\QuoteResourceInterface;
 use Worldline\PaymentCore\Api\Test\Infrastructure\ServiceStubSwitcherInterface;
@@ -26,11 +26,6 @@ class OrderPaymentInfoTest extends TestCase
     private $webhookStubSender;
 
     /**
-     * @var OrderInterfaceFactory
-     */
-    private $orderFactory;
-
-    /**
      * @var QuoteResourceInterface
      */
     private $quoteExtendedRepository;
@@ -45,14 +40,19 @@ class OrderPaymentInfoTest extends TestCase
      */
     private $transactionRepository;
 
+    /**
+     * @var FraudRepositoryInterface
+     */
+    private $fraudRepository;
+
     public function setUp(): void
     {
         $objectManager = Bootstrap::getObjectManager();
         $this->webhookStubSender = $objectManager->get(WebhookStubSenderInterface::class);
-        $this->orderFactory = $objectManager->get(OrderInterfaceFactory::class);
         $this->quoteExtendedRepository = $objectManager->get(QuoteResourceInterface::class);
         $this->paymentRepository = $objectManager->get(PaymentRepositoryInterface::class);
         $this->transactionRepository = $objectManager->get(TransactionRepositoryInterface::class);
+        $this->fraudRepository = $objectManager->get(FraudRepositoryInterface::class);
         $objectManager->get(ServiceStubSwitcherInterface::class)->setEnabled(true);
     }
 
@@ -86,6 +86,12 @@ class OrderPaymentInfoTest extends TestCase
 
         $transaction = $this->transactionRepository->getLastTransaction('test01');
         $this->assertEquals('3254564310_0', $transaction->getTransactionId());
+
+        // validate fraud info
+        $fraudInfo = $this->fraudRepository->getByIncrementId('test01');
+        $this->assertEquals('accepted', $fraudInfo->getResult());
+        $this->assertEquals('issuer', $fraudInfo->getLiability());
+        $this->assertEquals('Y', $fraudInfo->getAuthenticationStatus());
     }
 
     private function getQuote(): CartInterface

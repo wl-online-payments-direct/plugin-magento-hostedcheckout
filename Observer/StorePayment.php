@@ -7,7 +7,6 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Worldline\HostedCheckout\Model\Data\OrderPaymentContainer;
-use Worldline\HostedCheckout\Ui\ConfigProvider;
 
 /**
  * Store the order payment to use it further to identify what payment method has been used by the customer
@@ -34,7 +33,7 @@ class StorePayment implements ObserverInterface
     public function execute(Observer $observer): void
     {
         if ($observer->getPayment() instanceof OrderPaymentInterface
-            && in_array($observer->getPayment()->getMethod(), $this->paymentMethods)) {
+            && in_array($observer->getPayment()->getMethod(), $this->paymentMethods, true)) {
             $this->orderPaymentContainer->setPayment($observer->getPayment());
         }
     }

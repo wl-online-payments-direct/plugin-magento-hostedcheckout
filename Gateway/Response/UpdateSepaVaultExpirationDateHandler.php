@@ -82,6 +82,10 @@ class UpdateSepaVaultExpirationDateHandler implements HandlerInterface
             (int) $payment->getAdditionalInformation('customer_id')
         );
 
+        if (!$paymentToken) {
+            return;
+        }
+
         $paymentToken->setExpiresAt($expiresAt);
         $paymentToken->setTokenDetails($this->cardDate->convertDetailsToJSON([
             'type' => 'Sepa Direct Debit',
