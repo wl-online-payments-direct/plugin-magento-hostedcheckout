@@ -30,8 +30,9 @@ class SepaCustomProcessorStrategy implements CustomProcessorStrategyInterface
         $sepaOutput = $payment->getPaymentOutput()->getSepaDirectDebitPaymentMethodSpecificOutput();
         $statusCode = $payment->getStatusOutput()->getStatusCode();
         if (!$sepaOutput
+            || $statusCode !== TransactionStatusInterface::CAPTURED_CODE
             || PaymentProductsDetailsInterface::SEPA_DIRECT_DEBIT_PRODUCT_ID !== $sepaOutput->getPaymentProductId()
-            || $statusCode !== TransactionStatusInterface::CAPTURED_CODE) {
+        ) {
             return null;
         }
 

@@ -80,7 +80,9 @@ class LineItemBuilder
         OrderLineDetails $orderLineDetails
     ): AmountOfMoney {
         $amountOfMoney = $this->amountOfMoneyFactory->create();
-        $amountOfMoney->setCurrencyCode($item->getQuote()->getCurrency()->getQuoteCurrencyCode());
+        if ($item->getQuote()->getCurrency()) {
+            $amountOfMoney->setCurrencyCode($item->getQuote()->getCurrency()->getQuoteCurrencyCode());
+        }
 
         $totalAmount = (
             $orderLineDetails->getProductPrice()

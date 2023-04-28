@@ -62,7 +62,7 @@ class PaymentFromApplicableCurrenciesTest extends TestCase
             return $method->getCode();
         }, $paymentMethods);
 
-        $this->assertTrue(in_array(ConfigProvider::HC_CODE, $paymentMethodCodes));
+        $this->assertContains(ConfigProvider::HC_CODE, $paymentMethodCodes);
     }
 
     /**
@@ -95,7 +95,7 @@ class PaymentFromApplicableCurrenciesTest extends TestCase
             return $method->getCode();
         }, $paymentMethods);
 
-        $this->assertFalse(in_array(ConfigProvider::HC_CODE, $paymentMethodCodes));
+        $this->assertNotContains(ConfigProvider::HC_CODE, $paymentMethodCodes);
     }
 
     private function getQuote(): CartInterface

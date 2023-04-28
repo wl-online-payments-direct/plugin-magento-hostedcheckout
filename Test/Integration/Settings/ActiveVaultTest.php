@@ -65,7 +65,7 @@ class ActiveVaultTest extends TestCase
             return $method->getCode();
         }, $paymentMethods);
 
-        $this->assertTrue(in_array(ConfigProvider::HC_VAULT_CODE, $paymentMethodCodes));
+        $this->assertContains(ConfigProvider::HC_VAULT_CODE, $paymentMethodCodes);
     }
 
     /**
@@ -99,7 +99,7 @@ class ActiveVaultTest extends TestCase
             return $method->getCode();
         }, $paymentMethods);
 
-        $this->assertFalse(in_array(ConfigProvider::HC_VAULT_CODE, $paymentMethodCodes));
+        $this->assertNotContains(ConfigProvider::HC_VAULT_CODE, $paymentMethodCodes);
     }
 
     private function getQuote(): CartInterface

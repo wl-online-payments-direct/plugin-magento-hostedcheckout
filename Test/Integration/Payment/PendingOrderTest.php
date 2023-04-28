@@ -3,27 +3,26 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Test\Integration\Payment;
 
-use Magento\Customer\Api\AddressRepositoryInterface;
 use Magento\Customer\Model\Session;
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Request\HttpFactory as HttpRequestFactory;
+use Magento\Sales\Api\Data\OrderInterfaceFactory;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
-use Worldline\HostedCheckout\Controller\Returns\ReturnUrlFactory;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
 use Worldline\PaymentCore\Api\QuoteResourceInterface;
 use Worldline\PaymentCore\Api\Test\Infrastructure\ServiceStubSwitcherInterface;
+use Worldline\PaymentCore\Controller\Returns\PendingOrderFactory;
 
 /**
- * Test case about save new address after cancel transaction
+ * Test case about place order via pending page
  */
-class SaveNewAddressAfterCancelTransactionTest extends TestCase
+class PendingOrderTest extends TestCase
 {
     /**
-     * @var ReturnUrlFactory
+     * @var PendingOrderFactory
      */
-    private $returnUrlControllerFactory;
+    private $pendingOrderControllerFactory;
 
     /**
      * @var HttpRequestFactory
@@ -31,28 +30,22 @@ class SaveNewAddressAfterCancelTransactionTest extends TestCase
     private $httpRequestFactory;
 
     /**
-     * @var SearchCriteriaBuilder
-     */
-    private $searchCriteriaBuilder;
-
-    /**
-     * @var AddressRepositoryInterface
-     */
-    private $addressRepository;
-
-    /**
      * @var QuoteResourceInterface
      */
     private $quoteExtendedRepository;
 
+    /**
+     * @var OrderInterfaceFactory
+     */
+    private $orderFactory;
+
     public function setUp(): void
     {
         $objectManager = Bootstrap::getObjectManager();
-        $this->returnUrlControllerFactory = $objectManager->get(ReturnUrlFactory::class);
+        $this->pendingOrderControllerFactory = $objectManager->get(PendingOrderFactory::class);
         $this->httpRequestFactory = $objectManager->get(HttpRequestFactory::class);
-        $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
-        $this->addressRepository = $objectManager->get(AddressRepositoryInterface::class);
         $this->quoteExtendedRepository = $objectManager->get(QuoteResourceInterface::class);
+        $this->orderFactory = $objectManager->get(OrderInterfaceFactory::class);
         $objectManager->get(ServiceStubSwitcherInterface::class)->setEnabled(true);
     }
 
@@ -71,7 +64,7 @@ class SaveNewAddressAfterCancelTransactionTest extends TestCase
      * @magentoConfigFixture current_store worldline_connection/webhook/key test-X-Gcs-Keyid
      * @magentoConfigFixture current_store worldline_connection/webhook/secret_key test-X-Gcs-Signature
      */
-    public function testSaveNewAddress(): void
+    public function testPendingOrderController(): void
     {
         /** @var Session $customerSession */
         $customerSession = Bootstrap::getObjectManager()->get(Session::class);
@@ -79,30 +72,27 @@ class SaveNewAddressAfterCancelTransactionTest extends TestCase
         $this->updateQuote();
 
         $params = [
-            'hostedCheckoutId' => '3254564315',
-            'RETURNMAC' => '89b2ce0c-8b30-4463-8d43-3084932d9be2'
+            'incrementId' => 'test01'
         ];
 
         $request = $this->httpRequestFactory->create();
-        $returnUrlController = $this->returnUrlControllerFactory->create(['request' => $request]);
+        $pendingOrderController = $this->pendingOrderControllerFactory->create(['request' => $request]);
 
-        $returnUrlController->getRequest()->setParams($params)->setMethod(HttpRequest::METHOD_POST);
-        $result = $returnUrlController->execute();
+        $pendingOrderController->getRequest()->setParams($params)->setMethod(HttpRequest::METHOD_POST);
+        $result = $pendingOrderController->execute();
 
         // validate controller result
         $reflectedResult = new \ReflectionObject($result);
-        $urlProperty = $reflectedResult->getProperty('url');
-        $urlProperty->setAccessible(true);
-        $this->assertNotFalse(strpos($urlProperty->getValue($result), 'worldline/returns/reject'));
+        $jsonProperty = $reflectedResult->getProperty('json');
+        $jsonProperty->setAccessible(true);
+        $this->assertEquals('{"status":true}', $jsonProperty->getValue($result));
 
-        // validate saved address
-        $searchCriteria = $this->searchCriteriaBuilder->create();
-        $addresses = $this->addressRepository->getList($searchCriteria);
-        $this->assertCount(2, $addresses->getItems());
-
-        // validate clean quote
-        $quote = $this->quoteExtendedRepository->getQuoteByWorldlinePaymentId('3254564315');
-        $this->assertNull($quote->getPayment()->getAdditionalInformation('payment_id'));
+        // validate created order
+        $order = $this->orderFactory->create()->loadByIncrementId('test01');
+        $this->assertTrue((bool) $order->getId());
+        $this->assertEquals('processing', $order->getStatus());
+        $this->assertEquals(ConfigProvider::HC_CODE, $order->getPayment()->getMethod());
+        $this->assertCount(0, $order->getInvoiceCollection()->getItems());
     }
 
     private function updateQuote(): void
@@ -114,10 +104,9 @@ class SaveNewAddressAfterCancelTransactionTest extends TestCase
         $quote->getShippingAddress()->setCollectShippingRates(true);
         $quote->getShippingAddress()->collectShippingRates();
         $quote->setCustomerEmail('example@worldline.com');
-        $quote->getPayment()->setAdditionalInformation('payment_id', '3254564315_0');
+        $quote->getPayment()->setAdditionalInformation('payment_id', '3254564310_0');
         $quote->getPayment()->setAdditionalInformation('token_id', 'test');
         $quote->getPayment()->setAdditionalInformation('customer_id', 1);
-        $quote->getPayment()->setAdditionalInformation('return_id', '89b2ce0c-8b30-4463-8d43-3084932d9be2');
         $quote->collectTotals();
         $quote->save();
     }

@@ -12,7 +12,7 @@ class OrderPaymentContainer
      */
     private $payment;
 
-    public function setPayment(OrderPaymentInterface $payment)
+    public function setPayment(OrderPaymentInterface $payment): OrderPaymentContainer
     {
         $this->payment = $payment;
         return $this;
