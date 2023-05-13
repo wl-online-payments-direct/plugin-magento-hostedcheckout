@@ -17,6 +17,10 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.9.2
+- Add support for the 5.3.0 version of PHP SDK.
+- Fix connection credential caching.
+
 #### 1.9.1
 - Add support for the 5.1.0 version of PHP SDK.
 - Add integration tests.
