@@ -8,6 +8,7 @@ use Magento\Customer\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Request\HttpFactory as HttpRequestFactory;
+use Magento\Quote\Model\ResourceModel\Quote\Payment\CollectionFactory as QuotePaymentCollectionFactory;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 use Worldline\HostedCheckout\Controller\Returns\ReturnUrlFactory;
@@ -45,6 +46,11 @@ class SaveNewAddressAfterCancelTransactionTest extends TestCase
      */
     private $quoteExtendedRepository;
 
+    /**
+     * @var QuotePaymentCollectionFactory
+     */
+    private $quotePaymentCollectionFactory;
+
     public function setUp(): void
     {
         $objectManager = Bootstrap::getObjectManager();
@@ -53,6 +59,7 @@ class SaveNewAddressAfterCancelTransactionTest extends TestCase
         $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
         $this->addressRepository = $objectManager->get(AddressRepositoryInterface::class);
         $this->quoteExtendedRepository = $objectManager->get(QuoteResourceInterface::class);
+        $this->quotePaymentCollectionFactory = $objectManager->get(QuotePaymentCollectionFactory::class);
         $objectManager->get(ServiceStubSwitcherInterface::class)->setEnabled(true);
     }
 
@@ -101,8 +108,13 @@ class SaveNewAddressAfterCancelTransactionTest extends TestCase
         $this->assertCount(2, $addresses->getItems());
 
         // validate clean quote
-        $quote = $this->quoteExtendedRepository->getQuoteByWorldlinePaymentId('3254564315');
-        $this->assertNull($quote->getPayment()->getAdditionalInformation('payment_id'));
+        $collection = $this->quotePaymentCollectionFactory->create();
+        $collection->addFieldToFilter('additional_information', ['like' => '%' . '3254564315' . '%']);
+        $collection->setOrder('payment_id');
+        $collection->getSelect()->limit(1);
+        $quotePayment = $collection->getFirstItem();
+
+        $this->assertNull($quotePayment->getQuoteId());
     }
 
     private function updateQuote(): void
