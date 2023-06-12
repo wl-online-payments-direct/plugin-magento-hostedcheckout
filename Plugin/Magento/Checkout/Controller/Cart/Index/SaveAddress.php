@@ -62,7 +62,7 @@ class SaveAddress
         try {
             $hcResponse = $this->hcRequest->execute($hcId, (int)$quote->getStoreId());
             $worldlinePayment = $hcResponse->getCreatedPaymentOutput()->getPayment();
-            if ($worldlinePayment->getStatus() === self::REJECTED) {
+            if (!$worldlinePayment || $worldlinePayment->getStatus() === self::REJECTED) {
                 $this->addressSaveProcessor->saveAddress($quote);
                 $this->paymentInfoCleaner->clean($quote);
             }
