@@ -63,7 +63,6 @@ class SuccessTransactionChecker
         if (self::SUCCESSFUL_STATUS_CATEGORY !== $response->getCreatedPaymentOutput()->getPaymentStatusCategory()) {
             $quote->setIsActive(true);
             $this->addressSaveProcessor->saveAddress($quote);
-            $this->paymentInfoCleaner->clean($quote);
             throw new RejectOrderException(__('The payment has rejected, please, try again'));
         }
 
