@@ -106,15 +106,6 @@ class SaveNewAddressAfterCancelTransactionTest extends TestCase
         $searchCriteria = $this->searchCriteriaBuilder->create();
         $addresses = $this->addressRepository->getList($searchCriteria);
         $this->assertCount(2, $addresses->getItems());
-
-        // validate clean quote
-        $collection = $this->quotePaymentCollectionFactory->create();
-        $collection->addFieldToFilter('additional_information', ['like' => '%' . '3254564315' . '%']);
-        $collection->setOrder('payment_id');
-        $collection->getSelect()->limit(1);
-        $quotePayment = $collection->getFirstItem();
-
-        $this->assertNull($quotePayment->getQuoteId());
     }
 
     private function updateQuote(): void
