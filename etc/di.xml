@@ -56,6 +56,8 @@
                 <item name="bancontact" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\BancontactHandler\Proxy</item>
                 <item name="intersolve" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\IntersolveHandler\Proxy</item>
                 <item name="sepa_direct_debit" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\SepaDirectDebitHandler\Proxy</item>
+                <item name="przelewy24" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\Przelewy24Handler\Proxy</item>
+                <item name="eps" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\EpsHandler\Proxy</item>
             </argument>
         </arguments>
     </type>
