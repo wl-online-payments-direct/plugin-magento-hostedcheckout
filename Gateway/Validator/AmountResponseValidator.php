@@ -45,8 +45,9 @@ class AmountResponseValidator extends AbstractValidator
             $transactionAmountOfMoney += $surchargeAmount;
         }
 
+        $totalAmount = (float) $validationSubject['payment']->getPayment()->getOrder()->getGrandTotal();
         $currency = (string) $validationSubject['payment']->getPayment()->getOrder()->getOrderCurrencyCode();
-        $orderAmountOfMoney = $this->amountFormatter->formatToInteger((float) $validationSubject['amount'], $currency);
+        $orderAmountOfMoney = $this->amountFormatter->formatToInteger($totalAmount, $currency);
 
         return $this->createResult($transactionAmountOfMoney === $orderAmountOfMoney);
     }

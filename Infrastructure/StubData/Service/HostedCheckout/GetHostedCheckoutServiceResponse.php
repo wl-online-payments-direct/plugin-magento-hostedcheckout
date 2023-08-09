@@ -35,11 +35,11 @@ class GetHostedCheckoutServiceResponse
             "id": "3254564310",
             "paymentOutput": {
                 "acquiredAmount": {
-                    "amount": 1500,
+                    "amount": 2123,
                     "currencyCode": "EUR"
                 },
                 "amountOfMoney": {
-                    "amount": 1500,
+                    "amount": 2123,
                     "currencyCode": "EUR"
                 },
                 "cardPaymentMethodSpecificOutput": {
@@ -113,11 +113,11 @@ DATA;
             "id": "3254564311",
             "paymentOutput": {
                 "acquiredAmount": {
-                    "amount": 500,
+                    "amount": 708,
                     "currencyCode": "EUR"
                 },
                 "amountOfMoney": {
-                    "amount": 500,
+                    "amount": 708,
                     "currencyCode": "EUR"
                 },
                 "cardPaymentMethodSpecificOutput": {
@@ -190,11 +190,11 @@ DATA;
             "id": "3254564312",
             "paymentOutput": {
                 "acquiredAmount": {
-                    "amount": 3500,
+                    "amount": 4953,
                     "currencyCode": "EUR"
                 },
                 "amountOfMoney": {
-                    "amount": 3500,
+                    "amount": 4953,
                     "currencyCode": "EUR"
                 },
                 "cardPaymentMethodSpecificOutput": {
@@ -268,11 +268,11 @@ DATA;
             "id": "3254564313",
             "paymentOutput": {
                 "acquiredAmount": {
-                    "amount": 5000,
+                    "amount": 7075,
                     "currencyCode": "EUR"
                 },
                 "amountOfMoney": {
-                    "amount": 5000,
+                    "amount": 7075,
                     "currencyCode": "EUR"
                 },
                 "cardPaymentMethodSpecificOutput": {
@@ -479,11 +479,11 @@ DATA;
             "id": "3254564316",
             "paymentOutput": {
                 "acquiredAmount": {
-                    "amount": 1500,
+                    "amount": 2123,
                     "currencyCode": "EUR"
                 },
                 "amountOfMoney": {
-                    "amount": 1500,
+                    "amount": 2123,
                     "currencyCode": "EUR"
                 },
                 "surchargeSpecificOutput":{
