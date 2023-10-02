@@ -73,6 +73,16 @@ class SpecificInputDataBuilder
         $hostedCheckoutSpecificInput = $this->hostedCheckoutSpecificInputFactory->create();
         $hostedCheckoutSpecificInput->setLocale($this->store->getLocale());
 
+        $attempts = $this->config->getAllowedAttempts($storeId);
+        if ($attempts) {
+            $hostedCheckoutSpecificInput->setAllowedNumberOfPaymentAttempts($attempts);
+        }
+
+        $sessionTimeout = $this->config->getSessionTimeout($storeId);
+        if ($sessionTimeout) {
+            $hostedCheckoutSpecificInput->setSessionTimeout($sessionTimeout);
+        }
+
         /** @var CardPaymentMethodSpecificInputForHostedCheckout $cardPaymentMethodSpecificInputForHC */
         $cardPaymentMethodSpecificInputForHC = $this->cardPaymentMethodDataFactory->create();
         $cardPaymentMethodSpecificInputForHC->setGroupCards($this->config->isGroupCardsEnabled($storeId));

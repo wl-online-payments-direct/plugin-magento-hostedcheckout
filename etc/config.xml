@@ -37,6 +37,8 @@
                 <skip_3d>0</skip_3d>
                 <direct_debit_recurrence_type>UNIQUE</direct_debit_recurrence_type>
                 <direct_debit_signature_type>SMS</direct_debit_signature_type>
+                <allow_attempts>10</allow_attempts>
+                <session_timeout></session_timeout>
             </worldline_hosted_checkout>
             <worldline_hosted_checkout_vault>
                 <model>Worldline\HostedCheckout\Model\Method\Vault\HCVault\Virtual</model>
