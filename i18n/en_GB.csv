@@ -50,3 +50,9 @@ Sort,Sort
 Title,Title
 Unique,Unique
 UNSIGNED,UNSIGNED
+"Allowed Number Of Payment Attempts","Allowed Number Of Payment Attempts"
+"Set the number of times a customer can attempt a declined payment on the hosted checkout page. After reaching this retry limit, the transaction will be considered as definitely declined and customer will be redirected back to your store.","Set the number of times a customer can attempt a declined payment on the hosted checkout page. After reaching this retry limit, the transaction will be considered as definitely declined and customer will be redirected back to your store."
+"Enter a value from 1-10. Default value is 10.","Enter a value from 1-10. Default value is 10."
+"Enter a value from 1-1440. Default value is 180.","Enter a value from 1-1440. Default value is 180."
+"Session Timeout","Session Timeout"
+"Set in minutes how long the hosted payment page session should last for. Customers attempting to process their payment past this time limit will not be allowed to complete their transaction. Allowed value ranges from 1 minute to 1440 minutes (24 hours). By default, the hosted payment page has a session timeout of 180 minutes. Leave this box empty to use the default session timeout.","Set in minutes how long the hosted payment page session should last for. Customers attempting to process their payment past this time limit will not be allowed to complete their transaction. Allowed value ranges from 1 minute to 1440 minutes (24 hours). By default, the hosted payment page has a session timeout of 180 minutes. Leave this box empty to use the default session timeout."

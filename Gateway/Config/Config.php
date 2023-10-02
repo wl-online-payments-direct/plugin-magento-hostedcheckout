@@ -22,6 +22,8 @@ class Config extends PaymentGatewayConfig
     public const ENABLE_GROUP_CARDS = 'enable_group_cards';
     public const PROCESS_MEALVOUCHERS = 'process_mealvouchers';
     public const ONEY_PAYMENT_OPTION = 'oney3x4x_payment_option';
+    public const ALLOW_ATTEMPTS = 'allow_attempts';
+    public const SESSION_TIMEOUT = 'session_timeout';
 
     public const DIRECT_DEBIT_RECURRENCE_TYPE = 'direct_debit_recurrence_type';
     public const DIRECT_DEBIT_SIGNATURE_TYPE = 'direct_debit_signature_type';
@@ -94,6 +96,16 @@ class Config extends PaymentGatewayConfig
     public function getOneyPaymentOption(?int $storeId = null): string
     {
         return (string) $this->getValue(self::ONEY_PAYMENT_OPTION, $storeId);
+    }
+
+    public function getAllowedAttempts(?int $storeId = null): int
+    {
+        return (int) $this->getValue(self::ALLOW_ATTEMPTS, $storeId);
+    }
+
+    public function getSessionTimeout(?int $storeId = null): int
+    {
+        return (int) $this->getValue(self::SESSION_TIMEOUT, $storeId);
     }
 
     public function isVaultActive(?int $storeId = null): bool
