@@ -10,3 +10,6 @@
 "Enter a value from 1-1440. Default value is 180.","Introduzca un valor del 1 al 1440. El valor predeterminado es 180."
 "Session Timeout","Hora de término de la sesión"
 "Set in minutes how long the hosted payment page session should last for. Customers attempting to process their payment past this time limit will not be allowed to complete their transaction. Allowed value ranges from 1 minute to 1440 minutes (24 hours). By default, the hosted payment page has a session timeout of 180 minutes. Leave this box empty to use the default session timeout.","Establezca en minutos cuánto tiempo debe durar la sesión de la página de pago alojada. Los clientes que intenten procesar su pago después de este límite de tiempo no podrán completar su transacción. El valor permitido oscila entre 1 minuto y 1440 minutos (24 horas). De forma predeterminada, la página de pago alojada tiene un tiempo de espera de sesión de 180 minutos. Deje este cuadro vacío para utilizar el tiempo de espera predeterminado de la sesión."
+"Direct Debit Recurrence Type","Tipo de recurrencia de débito directo"
+"Direct Debit Signature Type","Tipo de firma de domiciliación bancaria"
+"Oney3x4x payment option","Opción de pago Oney3x4x"

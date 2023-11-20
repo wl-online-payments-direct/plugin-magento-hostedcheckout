@@ -91,7 +91,7 @@ class ConfigProvider implements ConfigProviderInterface
         }
     }
 
-    private function getIcons(int $storeId): array
+    public function getIcons(int $storeId): array
     {
         $quote = $this->checkoutSession->getQuote();
         $icons = $this->iconProvider->getIcons($storeId);
