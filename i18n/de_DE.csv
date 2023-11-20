@@ -10,3 +10,6 @@
 "Enter a value from 1-1440. Default value is 180.","Geben Sie einen Wert zwischen 1 und 1440 ein. Der Standardwert ist 180."
 "Session Timeout","Session-Timeout"
 "Set in minutes how long the hosted payment page session should last for. Customers attempting to process their payment past this time limit will not be allowed to complete their transaction. Allowed value ranges from 1 minute to 1440 minutes (24 hours). By default, the hosted payment page has a session timeout of 180 minutes. Leave this box empty to use the default session timeout.","Legen Sie in Minuten fest, wie lange die Sitzung der gehosteten Zahlungsseite dauern soll. Kunden, die versuchen, ihre Zahlung nach Ablauf dieser Frist abzuwickeln, können ihre Transaktion nicht abschließen. Der zulässige Wert liegt zwischen 1 Minute und 1440 Minuten (24 Stunden). Standardmäßig hat die gehostete Zahlungsseite ein Sitzungszeitlimit von 180 Minuten. Lassen Sie dieses Feld leer, um das standardmäßige Sitzungszeitlimit zu verwenden."
+"Direct Debit Recurrence Type","Art der Lastschriftwiederholung"
+"Direct Debit Signature Type","Art der Lastschrift-Signatur"
+"Oney3x4x payment option","Oney3x4x-Zahlungsoption"
