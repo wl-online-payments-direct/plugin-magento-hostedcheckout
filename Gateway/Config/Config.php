@@ -28,6 +28,8 @@ class Config extends PaymentGatewayConfig
     public const DIRECT_DEBIT_RECURRENCE_TYPE = 'direct_debit_recurrence_type';
     public const DIRECT_DEBIT_SIGNATURE_TYPE = 'direct_debit_signature_type';
 
+    public const BANK_TRANSFER_MODE = 'bank_transfer_mode';
+
     public const VAULT_PATH = 'payment/worldline_hosted_checkout_vault/active';
 
     /**
@@ -106,6 +108,11 @@ class Config extends PaymentGatewayConfig
     public function getSessionTimeout(?int $storeId = null): int
     {
         return (int) $this->getValue(self::SESSION_TIMEOUT, $storeId);
+    }
+
+    public function getBankTransferMode(?int $storeId = null): bool
+    {
+        return (bool) $this->getValue(self::BANK_TRANSFER_MODE, $storeId);
     }
 
     public function isVaultActive(?int $storeId = null): bool

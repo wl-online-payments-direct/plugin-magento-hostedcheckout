@@ -17,6 +17,15 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.15.0
+- Added new payment method "Bank Transfer by Worldline".
+- Added the "Contact email" field to the feature suggestion form.
+- Added compatibility with Php Sdk 5.10.0.
+- Replaced legacy Alipay payment method with the new Alipay+.
+- Replaced legacy WeChat Pay payment method with the new version.
+- Fixed validation error when placing orders with Virtual/downloadable products.
+- Fixed error when adding new shipping address on checkout.
+
 #### 1.14.0
 - Added email to customer and “Copy To” for "Auto Refund For Out Of Stock Orders" notifications.
 - Added translations for French (Belgium), French (Switzerland) and Dutch (Belgium).

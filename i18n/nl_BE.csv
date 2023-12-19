@@ -13,3 +13,4 @@
 "Direct Debit Recurrence Type","Type herhaling van automatische incasso"
 "Direct Debit Signature Type","Handtekeningtype automatische incasso"
 "Oney3x4x payment option","Oney3x4x betalingsoptie"
+"Select which modes of bank transfer you want to allow.'Instant Payments Only' : Receive transfer confirmation within 20 minutes. Limits customer bank choices to only those supporting instant payments.'Standard & Instant Payments' : Accept transfers from all banks. Broader customer bank choice but it can take up to 96 hours for transfer confirmation.","Selecteer welke vormen van bankoverschrijving u wilt toestaan. 'Instant Payments Only': ontvang binnen 20 minuten een overdrachtsbevestiging. Beperkt de bankkeuzes van klanten tot alleen de banken die directe betalingen ondersteunen. 'Standard & Instant Payments': accepteer overschrijvingen van alle banken. Ruimere bankkeuze voor klanten, maar het kan tot 96 uur duren voordat de overboeking wordt bevestigd."

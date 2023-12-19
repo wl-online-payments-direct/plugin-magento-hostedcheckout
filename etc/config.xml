@@ -39,6 +39,7 @@
                 <direct_debit_signature_type>SMS</direct_debit_signature_type>
                 <allow_attempts>10</allow_attempts>
                 <session_timeout></session_timeout>
+                <bank_transfer_mode>1</bank_transfer_mode>
             </worldline_hosted_checkout>
             <worldline_hosted_checkout_vault>
                 <model>Worldline\HostedCheckout\Model\Method\Vault\HCVault\Virtual</model>
