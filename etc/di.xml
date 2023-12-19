@@ -58,6 +58,10 @@
                 <item name="sepa_direct_debit" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\SepaDirectDebitHandler\Proxy</item>
                 <item name="przelewy24" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\Przelewy24Handler\Proxy</item>
                 <item name="eps" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\EpsHandler\Proxy</item>
+                <item name="alipay_plus" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\AlipayPlusHandler\Proxy</item>
+                <item name="ideal" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\IDealHandler\Proxy</item>
+                <item name="wechat_pay" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\WechatPayHandler\Proxy</item>
+                <item name="bank_transfer" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\BankTransferHandler\Proxy</item>
             </argument>
         </arguments>
     </type>

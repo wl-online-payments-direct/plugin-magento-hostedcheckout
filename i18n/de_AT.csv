@@ -13,3 +13,4 @@
 "Direct Debit Recurrence Type","Art der Lastschriftwiederholung"
 "Direct Debit Signature Type","Art der Lastschrift-Signatur"
 "Oney3x4x payment option","Oney3x4x-Zahlungsoption"
+"Select which modes of bank transfer you want to allow.'Instant Payments Only' : Receive transfer confirmation within 20 minutes. Limits customer bank choices to only those supporting instant payments.'Standard & Instant Payments' : Accept transfers from all banks. Broader customer bank choice but it can take up to 96 hours for transfer confirmation.","Wählen Sie aus, welche Banküberweisungsarten Sie zulassen möchten. 'Instant Payments Only': Erhalten Sie die Überweisungsbestätigung innerhalb von 20 Minuten. Beschränkt die Bankauswahl des Kunden auf diejenigen, die Sofortzahlungen unterstützen. 'Standard & Instant Payments': Akzeptieren Sie Überweisungen von allen Banken. Größere Bankauswahl für Kunden, allerdings kann die Überweisungsbestätigung bis zu 96 Stunden dauern."

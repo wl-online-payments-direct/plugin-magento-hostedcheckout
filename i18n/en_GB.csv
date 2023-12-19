@@ -59,3 +59,4 @@ UNSIGNED,UNSIGNED
 "Direct Debit Recurrence Type","Direct Debit Recurrence Type"
 "Direct Debit Signature Type","Direct Debit Signature Type"
 "Oney3x4x payment option","Oney3x4x payment option"
+"Select which modes of bank transfer you want to allow.'Instant Payments Only' : Receive transfer confirmation within 20 minutes. Limits customer bank choices to only those supporting instant payments.'Standard & Instant Payments' : Accept transfers from all banks. Broader customer bank choice but it can take up to 96 hours for transfer confirmation.","Select which modes of bank transfer you want to allow.'Instant Payments Only' : Receive transfer confirmation within 20 minutes. Limits customer bank choices to only those supporting instant payments.'Standard & Instant Payments' : Accept transfers from all banks. Broader customer bank choice but it can take up to 96 hours for transfer confirmation."
