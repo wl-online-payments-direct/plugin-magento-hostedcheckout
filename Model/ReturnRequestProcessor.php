@@ -13,6 +13,7 @@ use Worldline\PaymentCore\Api\QuoteResourceInterface;
 use Worldline\PaymentCore\Api\SessionDataManagerInterface;
 use Worldline\PaymentCore\Model\Order\RejectOrderException;
 use Worldline\PaymentCore\Model\OrderState\OrderState;
+use Worldline\PaymentCore\Model\QuotePayment\QuotePaymentRepository;
 
 class ReturnRequestProcessor
 {
@@ -45,36 +46,53 @@ class ReturnRequestProcessor
      */
     private $successTransactionChecker;
 
+    /**
+     * @var QuotePaymentRepository
+     */
+    private $quotePaymentRepository;
+
     public function __construct(
         SessionDataManagerInterface $sessionDataManager,
         QuoteResourceInterface $quoteResource,
         OrderFactory $orderFactory,
         OrderStateManagerInterface $orderStateManager,
-        SuccessTransactionChecker $successTransactionChecker
+        SuccessTransactionChecker $successTransactionChecker,
+        QuotePaymentRepository $quotePaymentRepository
     ) {
         $this->sessionDataManager = $sessionDataManager;
         $this->quoteResource = $quoteResource;
         $this->orderFactory = $orderFactory;
         $this->orderStateManager = $orderStateManager;
         $this->successTransactionChecker = $successTransactionChecker;
+        $this->quotePaymentRepository = $quotePaymentRepository;
     }
 
     /**
      * @param string $paymentId
      * @param string $returnId
-     * @return OrderState
+     * @return OrderState|null
      * @throws LocalizedException
      * @throws RejectOrderException
      */
-    public function processRequest(string $paymentId, string $returnId): OrderState
+    public function processRequest(string $paymentId, string $returnId): ?OrderState
     {
         if (!$paymentId || !$returnId) {
             throw new LocalizedException(__('Invalid request'));
         }
 
         $quote = $this->quoteResource->getQuoteByWorldlinePaymentId($paymentId);
+        if (!$quote) {
+            return null;
+        }
 
-        $response = $this->successTransactionChecker->check($quote, $paymentId, $returnId);
+        $payment = $quote->getPayment();
+        $payment->setAdditionalInformation('payment_id', $paymentId);
+        $quotePayment = $this->quotePaymentRepository->getByPaymentIdentifier($paymentId);
+        $payment->setMethod($quotePayment->getMethod());
+        $quote->setIsActive(false);
+        $this->quoteResource->save($quote);
+
+        $response = $this->successTransactionChecker->check($quote, $paymentId);
 
         $reservedOrderId = (string)$quote->getReservedOrderId();
         $order = $this->orderFactory->create()->loadByIncrementId($reservedOrderId);

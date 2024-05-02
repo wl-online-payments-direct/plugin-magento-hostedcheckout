@@ -41,7 +41,7 @@ class ReturnUrl extends Action implements HttpGetActionInterface
 
             /** @var OrderState $orderState */
             $orderState = $this->returnRequestProcessor->processRequest($hostedCheckoutId, $returnId);
-            if ($orderState->getState() === ReturnRequestProcessor::WAITING_STATE) {
+            if ($orderState && $orderState->getState() === ReturnRequestProcessor::WAITING_STATE) {
                 return $this->resultFactory->create(ResultFactory::TYPE_REDIRECT)
                     ->setPath(self::WAITING_URL, ['incrementId' => $orderState->getIncrementId()]);
             }

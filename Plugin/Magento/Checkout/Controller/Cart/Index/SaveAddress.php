@@ -64,7 +64,6 @@ class SaveAddress
             $worldlinePayment = $hcResponse->getCreatedPaymentOutput()->getPayment();
             if (!$worldlinePayment || $worldlinePayment->getStatus() === self::REJECTED) {
                 $this->addressSaveProcessor->saveAddress($quote);
-                $this->paymentInfoCleaner->clean($quote);
             }
         } catch (LocalizedException $e) {
             //expected behavior when customer presses go back button in their browser at the HC page

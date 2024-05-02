@@ -17,6 +17,10 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.16.0
+- Improved the order creation process by tracking multiple paymentIDs.
+- Improved logging and exception handling when multiple payments are done for a single order.
+
 #### 1.15.0
 - Added new payment method "Bank Transfer by Worldline".
 - Added the "Contact email" field to the feature suggestion form.
