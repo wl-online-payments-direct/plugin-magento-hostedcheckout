@@ -4,12 +4,16 @@ declare(strict_types=1);
 namespace Worldline\HostedCheckout\WebApi\RedirectManagement;
 
 use Magento\Quote\Api\Data\PaymentInterface;
+use Worldline\PaymentCore\Api\Data\QuotePaymentInterface;
 use Worldline\PaymentCore\Model\DataAssigner\DataAssignerInterface;
 
 class PaymentMethodDataAssigner implements DataAssignerInterface
 {
-    public function assign(PaymentInterface $payment, array $additionalInformation): void
-    {
+    public function assign(
+        PaymentInterface $payment,
+        QuotePaymentInterface $wlQuotePayment,
+        array $additionalInformation
+    ): void {
         if (isset($additionalInformation['is_active_payment_token_enabler'])) {
             $payment->setAdditionalInformation(
                 'is_active_payment_token_enabler',

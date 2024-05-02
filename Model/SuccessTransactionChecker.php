@@ -34,16 +34,16 @@ class SuccessTransactionChecker
     /**
      * @param CartInterface $quote
      * @param string $paymentId
-     * @param string $returnId
      * @return GetHostedCheckoutResponse
      * @throws LocalizedException
      * @throws RejectOrderException
      */
-    public function check(CartInterface $quote, string $paymentId, string $returnId): GetHostedCheckoutResponse
+    public function check(CartInterface $quote, string $paymentId): GetHostedCheckoutResponse
     {
         $payment = $quote->getPayment();
-        if ($payment->getAdditionalInformation('return_id') !== $returnId) {
-            throw new LocalizedException(__('Wrong return id'));
+
+        if (!in_array($paymentId, $payment->getAdditionalInformation('payment_ids'), true)) {
+            throw new LocalizedException(__('Wrong payment id'));
         }
 
         try {
