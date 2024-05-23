@@ -7,6 +7,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Api\Data\PaymentInterface;
 use Psr\Log\LoggerInterface;
 use Worldline\HostedCheckout\Api\TokenManagerInterface;
+use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
 use Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutRequestBuilder;
 use Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutService;
 use Worldline\PaymentCore\Api\Data\QuotePaymentInterface;
@@ -76,6 +77,7 @@ class CreatePaymentDataAssigner implements DataAssignerInterface
         $paymentId = $response->getHostedCheckoutId();
         $payment->setAdditionalInformation('return_id', $response->getRETURNMAC());
         $payment->setAdditionalInformation('payment_ids', array_merge($storedPayIds, [$paymentId]));
+        $payment->setAdditionalInformation(PaymentDataBuilder::HOSTED_CHECKOUT_ID, $paymentId);
         $payment->setWlRedirectUrl($response->getRedirectUrl());
         $wlQuotePayment->setPaymentIdentifier($paymentId);
         $wlQuotePayment->setMethod($payment->getMethod());

@@ -7,6 +7,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Api\Data\PaymentInterface;
 use OnlinePayments\Sdk\Domain\CreatePaymentRequestFactory;
 use Worldline\HostedCheckout\Api\TokenManagerInterface;
+use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
 use Worldline\HostedCheckout\Service\HostedCheckout\CreateHostedCheckoutRequestBuilder;
 use Worldline\PaymentCore\Api\Data\QuotePaymentInterface;
 use Worldline\PaymentCore\Api\Service\Payment\CreatePaymentServiceInterface;
@@ -79,6 +80,7 @@ class CreateVaultPaymentDataAssigner implements DataAssignerInterface
         $paymentId = $response->getPayment()->getId();
         $payment->setAdditionalInformation('payment_ids', array_merge($storedPayIds, [$paymentId]));
         $payment->setAdditionalInformation('return_id', $paymentId);
+        $payment->setAdditionalInformation(PaymentDataBuilder::HOSTED_CHECKOUT_ID, $paymentId);
         $wlQuotePayment->setPaymentIdentifier($paymentId);
     }
 }
