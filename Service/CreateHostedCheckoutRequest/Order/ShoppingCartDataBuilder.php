@@ -30,23 +30,16 @@ class ShoppingCartDataBuilder
      */
     private $lineItemBuilder;
 
-    /**
-     * @var ShippingLineItemBuilder
-     */
-    private $shippingLineItemBuilder;
-
     public function __construct(
         ShoppingCartFactory $shoppingCartFactory,
         ShoppingCartDataDebugLogger $shoppingCartDataDebugLogger,
         AmountFormatterInterface $amountFormatter,
-        LineItemBuilder $lineItemBuilder,
-        ShippingLineItemBuilder $shippingLineItemBuilder
+        LineItemBuilder $lineItemBuilder
     ) {
         $this->shoppingCartFactory = $shoppingCartFactory;
         $this->shoppingCartDataDebugLogger = $shoppingCartDataDebugLogger;
         $this->amountFormatter = $amountFormatter;
         $this->lineItemBuilder = $lineItemBuilder;
-        $this->shippingLineItemBuilder = $shippingLineItemBuilder;
     }
 
     public function build(CartInterface $quote): ?ShoppingCart
@@ -62,8 +55,6 @@ class ShoppingCartDataBuilder
             $lineItems[] = $lineItem = $this->lineItemBuilder->buildLineItem($item);
             $cartTotal += $lineItem->getAmountOfMoney()->getAmount();
         }
-
-        $lineItems[] = $this->shippingLineItemBuilder->buildShippingLineItem($quote);
 
         $shoppingCart = $this->shoppingCartFactory->create();
         $shoppingCart->setItems($lineItems);
@@ -81,7 +72,7 @@ class ShoppingCartDataBuilder
         $currency = (string) $quote->getCurrency()->getQuoteCurrencyCode();
 
         $shippingAmount = $this->amountFormatter->formatToInteger(
-            (float) $quote->getShippingAddress()->getShippingAmount(),
+            (float) $quote->getShippingAddress()->getShippingInclTax(),
             $currency
         );
         $cartGrandTotal = $this->amountFormatter->formatToInteger((float) $quote->getGrandTotal(), $currency);
