@@ -127,7 +127,7 @@ class LineItemBuilder
             (float)($item->getDiscountTaxCompensationAmount() / $item->getQty()),
             $currency
         );
-        return $this->amountFormatter->formatToInteger((float)$item->getPrice(), $currency) + $compensation;
+        return $this->amountFormatter->formatToInteger((float)$item->getConvertedPrice(), $currency) + $compensation;
     }
 
     private function getTaxAmount(CartItemInterface $item): int
