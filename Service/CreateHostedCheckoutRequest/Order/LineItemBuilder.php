@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order;
 
 use Magento\Bundle\Model\Product\Type as BundleProductType;
+use Magento\Directory\Model\CurrencyFactory;
 use Magento\Quote\Api\Data\CartItemInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use OnlinePayments\Sdk\Domain\AmountOfMoney;
 use OnlinePayments\Sdk\Domain\AmountOfMoneyFactory;
 use OnlinePayments\Sdk\Domain\LineItem;
@@ -35,17 +37,30 @@ class LineItemBuilder
      * @var AmountFormatterInterface
      */
     private $amountFormatter;
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var CurrencyFactory
+     */
+    protected $currencyFactory;
 
     public function __construct(
         LineItemFactory $lineItemFactory,
         AmountOfMoneyFactory $amountOfMoneyFactory,
         OrderLineDetailsFactory $orderLineDetailsFactory,
-        AmountFormatterInterface $amountFormatter
+        AmountFormatterInterface $amountFormatter,
+        StoreManagerInterface $storeManager,
+        CurrencyFactory $currencyFactory
     ) {
         $this->lineItemFactory = $lineItemFactory;
         $this->amountOfMoneyFactory = $amountOfMoneyFactory;
         $this->orderLineDetailsFactory = $orderLineDetailsFactory;
         $this->amountFormatter = $amountFormatter;
+        $this->storeManager = $storeManager;
+        $this->currencyFactory = $currencyFactory;
     }
 
     public function buildLineItem(CartItemInterface $item): LineItem
@@ -127,13 +142,19 @@ class LineItemBuilder
             (float)($item->getDiscountTaxCompensationAmount() / $item->getQty()),
             $currency
         );
-        return $this->amountFormatter->formatToInteger((float)$item->getConvertedPrice(), $currency) + $compensation;
+        $price = $item->getPrice();
+        $baseCurrency = $this->storeManager->getStore()->getBaseCurrency()->getCode();
+        $rate = $this->currencyFactory->create()->load($currency)->getAnyRate($baseCurrency);
+
+        return $this->amountFormatter->formatToInteger((float)$price / $rate, $currency) + $compensation;
     }
 
     private function getTaxAmount(CartItemInterface $item): int
     {
         $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
-        $totalTaxes = (float)$item->getTaxAmount() + (float)$item->getWeeeTaxAppliedRowAmount();
+        $weeeTax = json_decode($item->getWeeeTaxApplied(), true);
+        $totalTaxes = (float)$item->getTaxAmount() +
+            (float)(isset($weeeTax[0], $weeeTax[0]['base_amount_incl_tax']) ? $weeeTax[0]['base_amount_incl_tax'] : 0);
 
         return $this->amountFormatter->formatToInteger($totalTaxes / $item->getQty(), $currency);
     }
