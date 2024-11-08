@@ -48,13 +48,14 @@ class LineItemBuilder
     protected $currencyFactory;
 
     public function __construct(
-        LineItemFactory $lineItemFactory,
-        AmountOfMoneyFactory $amountOfMoneyFactory,
-        OrderLineDetailsFactory $orderLineDetailsFactory,
+        LineItemFactory          $lineItemFactory,
+        AmountOfMoneyFactory     $amountOfMoneyFactory,
+        OrderLineDetailsFactory  $orderLineDetailsFactory,
         AmountFormatterInterface $amountFormatter,
-        StoreManagerInterface $storeManager,
-        CurrencyFactory $currencyFactory
-    ) {
+        StoreManagerInterface    $storeManager,
+        CurrencyFactory          $currencyFactory
+    )
+    {
         $this->lineItemFactory = $lineItemFactory;
         $this->amountOfMoneyFactory = $amountOfMoneyFactory;
         $this->orderLineDetailsFactory = $orderLineDetailsFactory;
@@ -92,8 +93,9 @@ class LineItemBuilder
 
     private function getAmountOfMoney(
         CartItemInterface $item,
-        OrderLineDetails $orderLineDetails
-    ): AmountOfMoney {
+        OrderLineDetails  $orderLineDetails
+    ): AmountOfMoney
+    {
         $amountOfMoney = $this->amountOfMoneyFactory->create();
         if ($item->getQuote()->getCurrency()) {
             $amountOfMoney->setCurrencyCode($item->getQuote()->getCurrency()->getQuoteCurrencyCode());
@@ -142,11 +144,9 @@ class LineItemBuilder
             (float)($item->getDiscountTaxCompensationAmount() / $item->getQty()),
             $currency
         );
-        $price = $item->getPrice();
-        $baseCurrency = $this->storeManager->getStore()->getBaseCurrency()->getCode();
-        $rate = $this->currencyFactory->create()->load($currency)->getAnyRate($baseCurrency);
+        $price = $item->getRowTotal() / $item->getQty();
 
-        return $this->amountFormatter->formatToInteger((float)$price / $rate, $currency) + $compensation;
+        return $this->amountFormatter->formatToInteger((float)$price, $currency) + $compensation;
     }
 
     private function getTaxAmount(CartItemInterface $item): int
@@ -156,10 +156,10 @@ class LineItemBuilder
         $totalWeeeTaxes = 0;
 
         foreach ($weeeTaxes as $weeeTax) {
-            $totalWeeeTaxes += (float)($weeeTax['base_amount_incl_tax'] ?? 0);
+            $totalWeeeTaxes += (float)($weeeTax['row_amount_incl_tax'] ?? 0);
         }
 
-        $totalTaxes = (float)$item->getTaxAmount() + $item->getQty() * $totalWeeeTaxes;
+        $totalTaxes = (float)$item->getTaxAmount() + $totalWeeeTaxes;
 
         return $this->amountFormatter->formatToInteger($totalTaxes / $item->getQty(), $currency);
     }
