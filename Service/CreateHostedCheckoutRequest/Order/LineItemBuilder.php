@@ -152,9 +152,14 @@ class LineItemBuilder
     private function getTaxAmount(CartItemInterface $item): int
     {
         $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
-        $weeeTax = json_decode($item->getWeeeTaxApplied(), true);
-        $totalTaxes = (float)$item->getTaxAmount() +
-            (float)(isset($weeeTax[0], $weeeTax[0]['base_amount_incl_tax']) ? $weeeTax[0]['base_amount_incl_tax'] : 0);
+        $weeeTaxes = json_decode($item->getWeeeTaxApplied(), true);
+        $totalWeeeTaxes = 0;
+
+        foreach ($weeeTaxes as $weeeTax) {
+            $totalWeeeTaxes += (float)($weeeTax['base_amount_incl_tax'] ?? 0);
+        }
+
+        $totalTaxes = (float)$item->getTaxAmount() + $item->getQty() * $totalWeeeTaxes;
 
         return $this->amountFormatter->formatToInteger($totalTaxes / $item->getQty(), $currency);
     }
