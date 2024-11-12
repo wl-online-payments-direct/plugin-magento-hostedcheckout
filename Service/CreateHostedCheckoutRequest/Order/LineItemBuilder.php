@@ -68,7 +68,7 @@ class LineItemBuilder
         $orderLineDetails->setProductCode($item->getSku());
         $orderLineDetails->setProductName($item->getName());
         $this->addProductType($item, $orderLineDetails);
-        $orderLineDetails->setQuantity((float) $item->getQty());
+        $orderLineDetails->setQuantity((float)$item->getQty());
         $orderLineDetails->setProductPrice($this->getProductPrice($item));
         $orderLineDetails->setTaxAmount($this->getTaxAmount($item));
 
@@ -85,12 +85,12 @@ class LineItemBuilder
         }
 
         $totalAmount = (
-            $orderLineDetails->getProductPrice()
-            + $orderLineDetails->getTaxAmount()
-            - $orderLineDetails->getDiscountAmount()
-        ) * $item->getQty();
+                $orderLineDetails->getProductPrice()
+                + $orderLineDetails->getTaxAmount()
+                - $orderLineDetails->getDiscountAmount()
+            ) * $item->getQty();
 
-        $amountOfMoney->setAmount((int) $totalAmount);
+        $amountOfMoney->setAmount((int)$totalAmount);
 
         return $amountOfMoney;
     }
@@ -103,12 +103,12 @@ class LineItemBuilder
                 $discountAmount += $child->getDiscountAmount();
             }
         } else {
-            $discountAmount = (float) $item->getDiscountAmount();
+            $discountAmount = (float)$item->getDiscountAmount();
         }
 
-        $currency = (string) $item->getQuote()->getCurrency()->getQuoteCurrencyCode();
+        $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
 
-        return $this->amountFormatter->formatToInteger((float) ($discountAmount / $item->getQty()), $currency);
+        return $this->amountFormatter->formatToInteger((float)($discountAmount / $item->getQty()), $currency);
     }
 
     private function addProductType(CartItemInterface $item, OrderLineDetails $orderLineDetails): void
@@ -121,21 +121,20 @@ class LineItemBuilder
 
     private function getProductPrice(CartItemInterface $item): int
     {
-        $currency = (string) $item->getQuote()->getCurrency()->getQuoteCurrencyCode();
+        $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
 
         $compensation = $this->amountFormatter->formatToInteger(
-            (float) ($item->getDiscountTaxCompensationAmount() / $item->getQty()),
+            (float)($item->getDiscountTaxCompensationAmount() / $item->getQty()),
             $currency
         );
-        return $this->amountFormatter->formatToInteger((float) $item->getRowTotal(), $currency) + $compensation;
+        return $this->amountFormatter->formatToInteger((float)$item->getRowTotal(), $currency) + $compensation;
     }
 
     private function getTaxAmount(CartItemInterface $item): int
     {
-        $currency = (string) $item->getQuote()->getCurrency()->getQuoteCurrencyCode();
-        return $this->amountFormatter->formatToInteger(
-            (float) ($item->getTaxAmount() / $item->getQty()),
-            $currency
-        );
+        $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
+        $totalTaxes = (float)$item->getTaxAmount() + (float)$item->getWeeeTaxAppliedRowAmount();
+
+        return $this->amountFormatter->formatToInteger($totalTaxes / $item->getQty(), $currency);
     }
 }
