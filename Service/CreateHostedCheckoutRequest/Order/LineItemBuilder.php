@@ -6,7 +6,6 @@ namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Directory\Model\CurrencyFactory;
 use Magento\Quote\Api\Data\CartItemInterface;
-use Magento\Store\Model\StoreManagerInterface;
 use OnlinePayments\Sdk\Domain\AmountOfMoney;
 use OnlinePayments\Sdk\Domain\AmountOfMoneyFactory;
 use OnlinePayments\Sdk\Domain\LineItem;
@@ -38,10 +37,6 @@ class LineItemBuilder
      * @var AmountFormatterInterface
      */
     private $amountFormatter;
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $storeManager;
 
     /**
      * @var CurrencyFactory
@@ -57,7 +52,6 @@ class LineItemBuilder
         AmountOfMoneyFactory $amountOfMoneyFactory,
         OrderLineDetailsFactory $orderLineDetailsFactory,
         AmountFormatterInterface $amountFormatter,
-        StoreManagerInterface $storeManager,
         CurrencyFactory $currencyFactory,
         Json $json
     ) {
@@ -65,7 +59,6 @@ class LineItemBuilder
         $this->amountOfMoneyFactory = $amountOfMoneyFactory;
         $this->orderLineDetailsFactory = $orderLineDetailsFactory;
         $this->amountFormatter = $amountFormatter;
-        $this->storeManager = $storeManager;
         $this->currencyFactory = $currencyFactory;
         $this->json = $json;
     }

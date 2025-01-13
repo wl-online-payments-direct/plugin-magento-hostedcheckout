@@ -6,9 +6,7 @@ namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Payment\Gateway\Config\Config;
 use Magento\Quote\Api\Data\CartInterface;
-use OnlinePayments\Sdk\Domain\Discount;
-use OnlinePayments\Sdk\Domain\Order;
-use OnlinePayments\Sdk\Domain\ShoppingCart;
+use OnlinePayments\Sdk\Domain;
 use Worldline\HostedCheckout\Model\MealvouchersProductTypeBuilder;
 use Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order\ShoppingCartDataBuilder;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
@@ -81,7 +79,7 @@ class OrderDataBuilder
         $this->configProviders = $configProviders;
     }
 
-    public function build(CartInterface $quote): Order
+    public function build(CartInterface $quote): Domain\Order
     {
         $storeId = (int)$quote->getStoreId();
 
@@ -117,7 +115,7 @@ class OrderDataBuilder
         return $order;
     }
 
-    private function getDiscount(CartInterface $quote, ShoppingCart $cart): ?Discount
+    private function getDiscount(CartInterface $quote, Domain\ShoppingCart $cart): ?Domain\Discount
     {
         $cartTotal = 0;
 
@@ -131,7 +129,7 @@ class OrderDataBuilder
         );
 
         if ($amountDifference < 0 && $amountDifference > -$allowedDifference) {
-            $discount = new Discount();
+            $discount = new Domain\Discount();
             $discount->setAmount(-$amountDifference);
 
             return $discount;

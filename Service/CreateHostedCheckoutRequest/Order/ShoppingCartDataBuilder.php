@@ -140,6 +140,8 @@ class ShoppingCartDataBuilder
     {
         $difference = $this->getAmountDifference($quote, $cartTotal);
 
-        return $difference > 0 || $difference < -$this->getAllowedDifference((string)$quote->getCurrency()->getQuoteCurrencyCode());
+        $currency = (string)$quote->getCurrency()->getQuoteCurrencyCode();
+
+        return $difference > 0 || $difference < -$this->getAllowedDifference($currency);
     }
 }
