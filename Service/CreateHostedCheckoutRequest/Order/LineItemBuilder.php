@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order;
 
 use Magento\Bundle\Model\Product\Type as BundleProductType;
+use Magento\Directory\Model\CurrencyFactory;
 use Magento\Quote\Api\Data\CartItemInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use OnlinePayments\Sdk\Domain\AmountOfMoney;
 use OnlinePayments\Sdk\Domain\AmountOfMoneyFactory;
 use OnlinePayments\Sdk\Domain\LineItem;
@@ -13,6 +15,7 @@ use OnlinePayments\Sdk\Domain\OrderLineDetails;
 use OnlinePayments\Sdk\Domain\OrderLineDetailsFactory;
 use Worldline\HostedCheckout\Model\Config\Source\MealvouchersProductTypes;
 use Worldline\PaymentCore\Api\AmountFormatterInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 
 class LineItemBuilder
 {
@@ -35,17 +38,36 @@ class LineItemBuilder
      * @var AmountFormatterInterface
      */
     private $amountFormatter;
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var CurrencyFactory
+     */
+    protected $currencyFactory;
+    /**
+     * @var Json
+     */
+    private $json;
 
     public function __construct(
         LineItemFactory $lineItemFactory,
         AmountOfMoneyFactory $amountOfMoneyFactory,
         OrderLineDetailsFactory $orderLineDetailsFactory,
-        AmountFormatterInterface $amountFormatter
+        AmountFormatterInterface $amountFormatter,
+        StoreManagerInterface $storeManager,
+        CurrencyFactory $currencyFactory,
+        Json $json
     ) {
         $this->lineItemFactory = $lineItemFactory;
         $this->amountOfMoneyFactory = $amountOfMoneyFactory;
         $this->orderLineDetailsFactory = $orderLineDetailsFactory;
         $this->amountFormatter = $amountFormatter;
+        $this->storeManager = $storeManager;
+        $this->currencyFactory = $currencyFactory;
+        $this->json = $json;
     }
 
     public function buildLineItem(CartItemInterface $item): LineItem
@@ -61,6 +83,28 @@ class LineItemBuilder
         return $lineItem;
     }
 
+    public function buildAdjustmentLineItem(int $amount, string $currency): LineItem
+    {
+        $lineItem = $this->lineItemFactory->create();
+
+        $orderLineDetails = $this->orderLineDetailsFactory->create();
+        $orderLineDetails->setDiscountAmount(0);
+        $orderLineDetails->setProductName('Adjustment');
+        $orderLineDetails->setProductCode('Adjustment');
+        $orderLineDetails->setQuantity(1);
+        $orderLineDetails->setTaxAmount(0);
+        $orderLineDetails->setProductPrice($amount);
+
+        $amountOfMoney = $this->amountOfMoneyFactory->create();
+        $amountOfMoney->setAmount($amount);
+        $amountOfMoney->setCurrencyCode($currency);
+
+        $lineItem->setOrderLineDetails($orderLineDetails);
+        $lineItem->setAmountOfMoney($amountOfMoney);
+
+        return $lineItem;
+    }
+
     private function getOrderLineDetails(CartItemInterface $item): OrderLineDetails
     {
         $orderLineDetails = $this->orderLineDetailsFactory->create();
@@ -69,6 +113,12 @@ class LineItemBuilder
         $orderLineDetails->setProductName($item->getName());
         $this->addProductType($item, $orderLineDetails);
         $orderLineDetails->setQuantity((float)$item->getQty());
+
+        if (floor($item->getQty()) < $item->getQty()) {
+            $orderLineDetails->setProductName($item->getName() . ' (quantity ' . $item->getQty() . ')');
+            $orderLineDetails->setQuantity(1);
+        }
+
         $orderLineDetails->setProductPrice($this->getProductPrice($item));
         $orderLineDetails->setTaxAmount($this->getTaxAmount($item));
 
@@ -88,7 +138,7 @@ class LineItemBuilder
                 $orderLineDetails->getProductPrice()
                 + $orderLineDetails->getTaxAmount()
                 - $orderLineDetails->getDiscountAmount()
-            ) * $item->getQty();
+            ) * $orderLineDetails->getQuantity();
 
         $amountOfMoney->setAmount((int)$totalAmount);
 
@@ -106,9 +156,15 @@ class LineItemBuilder
             $discountAmount = (float)$item->getDiscountAmount();
         }
 
+        $quantity = $item->getQty();
+
+        if (floor($item->getQty()) < $item->getQty()) {
+            $quantity = 1;
+        }
+
         $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
 
-        return $this->amountFormatter->formatToInteger((float)($discountAmount / $item->getQty()), $currency);
+        return $this->amountFormatter->formatToInteger((float)($discountAmount / $quantity), $currency);
     }
 
     private function addProductType(CartItemInterface $item, OrderLineDetails $orderLineDetails): void
@@ -122,19 +178,39 @@ class LineItemBuilder
     private function getProductPrice(CartItemInterface $item): int
     {
         $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
+        $quantity = $item->getQty();
+
+        if (floor($item->getQty()) < $item->getQty()) {
+            $quantity = 1;
+        }
 
         $compensation = $this->amountFormatter->formatToInteger(
-            (float)($item->getDiscountTaxCompensationAmount() / $item->getQty()),
+            (float)($item->getDiscountTaxCompensationAmount() / $quantity),
             $currency
         );
-        return $this->amountFormatter->formatToInteger((float)$item->getRowTotal(), $currency) + $compensation;
+        $price = $item->getRowTotal() / $quantity;
+
+        return $this->amountFormatter->formatToInteger((float)$price, $currency) + $compensation;
     }
 
     private function getTaxAmount(CartItemInterface $item): int
     {
-        $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
-        $totalTaxes = (float)$item->getTaxAmount() + (float)$item->getWeeeTaxAppliedRowAmount();
+        $quantity = $item->getQty();
 
-        return $this->amountFormatter->formatToInteger($totalTaxes / $item->getQty(), $currency);
+        if (floor($item->getQty()) < $item->getQty()) {
+            $quantity = 1;
+        }
+
+        $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
+        $weeeTaxes = $this->json->unserialize($item->getWeeeTaxApplied() ?? '[]', true);
+        $totalWeeeTaxes = 0;
+
+        foreach ($weeeTaxes as $weeeTax) {
+            $totalWeeeTaxes += (float)($weeeTax['row_amount_incl_tax'] ?? 0);
+        }
+
+        $totalTaxes = (float)$item->getTaxAmount() + $totalWeeeTaxes;
+
+        return $this->amountFormatter->formatToInteger($totalTaxes / $quantity, $currency);
     }
 }

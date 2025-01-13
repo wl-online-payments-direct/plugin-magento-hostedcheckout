@@ -6,7 +6,9 @@ namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Payment\Gateway\Config\Config;
 use Magento\Quote\Api\Data\CartInterface;
+use OnlinePayments\Sdk\Domain\Discount;
 use OnlinePayments\Sdk\Domain\Order;
+use OnlinePayments\Sdk\Domain\ShoppingCart;
 use Worldline\HostedCheckout\Model\MealvouchersProductTypeBuilder;
 use Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order\ShoppingCartDataBuilder;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
@@ -105,8 +107,36 @@ class OrderDataBuilder
 
         if ($cart = $this->shoppingCartDataBuilder->build($quote)) {
             $order->setShoppingCart($cart);
+            $discount = $this->getDiscount($quote, $cart);
+
+            if ($discount) {
+                $order->setDiscount($discount);
+            }
         }
 
         return $order;
+    }
+
+    private function getDiscount(CartInterface $quote, ShoppingCart $cart): ?Discount
+    {
+        $cartTotal = 0;
+
+        foreach ($cart->getItems() as $item) {
+            $cartTotal += $item->getAmountOfMoney()->getAmount();
+        }
+
+        $amountDifference = $this->shoppingCartDataBuilder->getAmountDifference($quote, $cartTotal);
+        $allowedDifference = $this->shoppingCartDataBuilder->getAllowedDifference(
+            (string) $quote->getCurrency()->getQuoteCurrencyCode()
+        );
+
+        if ($amountDifference < 0 && $amountDifference > -$allowedDifference) {
+            $discount = new Discount();
+            $discount->setAmount(-$amountDifference);
+
+            return $discount;
+        }
+
+        return null;
     }
 }
