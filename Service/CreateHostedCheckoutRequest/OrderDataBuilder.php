@@ -105,6 +105,11 @@ class OrderDataBuilder
 
         if ($cart = $this->shoppingCartDataBuilder->build($quote)) {
             $order->setShoppingCart($cart);
+            $discount = $this->shoppingCartDataBuilder->getDiscountAdjustment($quote, $cart);
+
+            if ($discount) {
+                $order->setDiscount($discount);
+            }
         }
 
         return $order;
