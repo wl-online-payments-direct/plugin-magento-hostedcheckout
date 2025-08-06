@@ -17,6 +17,10 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.25.0
+- Add Mealvoucher payment product
+- Add CVCO (Cheque Vacances Connect) payment product
+
 #### 1.24.0
 - Add compatibility with PHP 8.4
 - Update SDK version
