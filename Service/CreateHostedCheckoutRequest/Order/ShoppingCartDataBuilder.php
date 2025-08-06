@@ -12,6 +12,8 @@ use Worldline\PaymentCore\Api\AmountFormatterInterface;
 
 class ShoppingCartDataBuilder
 {
+    public const WORLD_LINE_MEAL_VAUCHER_METHOD = 'worldline_redirect_payment_5402';
+
     /**
      * @var ShoppingCartFactory
      */
@@ -58,6 +60,9 @@ class ShoppingCartDataBuilder
             $cartTotal += $lineItem->getAmountOfMoney()->getAmount();
         }
 
+        if ($quote->getPayment()->getData('method') === self::WORLD_LINE_MEAL_VAUCHER_METHOD) {
+            $lineItems =  $this->lineItemBuilder->buildMergedProduct($lineItems, (string)$quote->getCurrency()->getQuoteCurrencyCode());
+        }
         $lineItems = $this->adjustAmount($lineItems, $quote, $cartTotal);
 
         $shoppingCart = $this->shoppingCartFactory->create();

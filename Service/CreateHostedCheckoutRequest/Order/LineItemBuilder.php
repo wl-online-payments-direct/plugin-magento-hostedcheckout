@@ -98,6 +98,150 @@ class LineItemBuilder
         return $lineItem;
     }
 
+    /**
+     * @param array $lineItems
+     * @param string $currency
+     *
+     * @return LineItem[]
+     */
+    public function buildMergedProduct(array $lineItems, string $currency): array
+    {
+        $lineItem = $this->lineItemFactory->create();
+        $orderLineDetails = $this->orderLineDetailsFactory->create();
+
+        $amounts = $this->buildMergedProductAmounts($lineItems);
+
+        $orderLineDetails->setDiscountAmount($amounts['totalDiscount']);
+        $orderLineDetails->setProductPrice($amounts['productPrice']);
+        $orderLineDetails->setTaxAmount($amounts['totalTax']);
+        $orderLineDetails->setQuantity(1);
+        $orderLineDetails->setProductName($this->getMergedProductName($lineItems));
+        $orderLineDetails->setProductType($this->getMergedProductType($lineItems));
+        $orderLineDetails->setProductCode($this->getProductCode($lineItems));
+
+        $amount = $this->amountOfMoneyFactory->create();
+        $amount->setAmount($amounts['totalAmount']);
+        $amount->setCurrencyCode($currency);
+
+        $lineItem->setOrderLineDetails($orderLineDetails);
+        $lineItem->setAmountOfMoney($amount);
+
+        return [$lineItem];
+    }
+
+    /**
+     * @param array $lineItems
+     *
+     * @return array
+     */
+    private function buildMergedProductAmounts(array $lineItems): array
+    {
+        $totalAmount = 0;
+        $totalDiscount = 0;
+        $totalTax = 0;
+        $productPrice = 0;
+
+        foreach ($lineItems as $lineItem) {
+            $totalAmount += $lineItem->getAmountOfMoney()->getAmount();
+            $productPrice += $lineItem->getOrderLineDetails()->getProductPrice() * $lineItem->getOrderLineDetails()->getQuantity();
+            $totalDiscount += $lineItem->getOrderLineDetails()->getDiscountAmount() * $lineItem->getOrderLineDetails()->getQuantity();
+            $totalTax += $lineItem->getOrderLineDetails()->getTaxAmount() * $lineItem->getOrderLineDetails()->getQuantity();
+        }
+
+        return [
+          'totalAmount' => $totalAmount,
+          'totalDiscount' => $totalDiscount,
+          'totalTax' => $totalTax,
+          'productPrice' => $productPrice
+        ];
+    }
+
+    /**
+     *  Determines the merged product type based on priority:
+     *  - FoodAndDrink > HomeAndGarden > GiftAndFlowers
+     *
+     * @param array $products
+     *
+     * @return string
+     */
+    private function getMergedProductType(array $products): string
+    {
+        $hasHomeAndGarden = false;
+
+        foreach ($products as $product) {
+            $type = $product->getOrderLineDetails()->getProductType();
+
+            if ($type === MealvouchersProductTypes::FOOD_AND_DRINK) {
+                return MealvouchersProductTypes::FOOD_AND_DRINK;
+            }
+
+            if ($type === MealvouchersProductTypes::HOME_AND_GARDEN) {
+                $hasHomeAndGarden = true;
+            }
+        }
+
+        // If no FoodAndDrink but at least one HomeAndGarden
+        if ($hasHomeAndGarden) {
+            return MealvouchersProductTypes::HOME_AND_GARDEN;
+        }
+
+        // Default fallback (GiftAndFlowers)
+        return MealvouchersProductTypes::GIFT_AND_FLOWERS;
+    }
+
+    /**
+     * @param array $products
+     *
+     * @return string
+     */
+    private function getProductCode(array $products): string
+    {
+        if (count($products) === 1) {
+            return $products[0]->getOrderLineDetails()->getProductCode();
+        }
+
+        return MealvouchersProductTypes::MERGED_PRODUCT_CODE;
+    }
+
+    /**
+     * @param array $products
+     *
+     * @return string
+     */
+    private function getMergedProductName(array $products): string
+    {
+        $typeCounts = [];
+        $names = [];
+
+        foreach ($products as $product) {
+            $type = $product->getOrderLineDetails()->getProductType();
+            $names[] = $product->getOrderLineDetails()->getProductName();
+            if ($type !== null) {
+                $type = MealvouchersProductTypes::optionsMap()[$type];
+                if (!isset($typeCounts[$type])) {
+                    $typeCounts[$type] = 0;
+                }
+                $typeCounts[$type] += (int) $product->getOrderLineDetails()->getQuantity();
+            }
+        }
+
+        // Create a string like "Product A + Product B + Product C"
+        $nameString = implode(' + ', $names);
+
+        if (strlen($nameString) <= 50) {
+            return $nameString;
+        }
+
+        $parts = [];
+        foreach ($typeCounts as $type => $count) {
+            $parts[] = "{$count} {$type}";
+        }
+        $result = implode(' & ', $parts);
+
+        // Truncate if needed
+        return strlen($result) > 50 ? substr($result, 0, 50) : $result;
+    }
+
     private function getOrderLineDetails(CartItemInterface $item): OrderLineDetails
     {
         $orderLineDetails = $this->orderLineDetailsFactory->create();
