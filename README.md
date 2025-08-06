@@ -17,6 +17,10 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.26.0
+- Fix logo issue for CB on checkout page
+- Fix PHP >= 8.2 issue with not sending parameter by reference
+
 #### 1.25.0
 - Add Mealvoucher payment product
 - Add CVCO (Cheque Vacances Connect) payment product
