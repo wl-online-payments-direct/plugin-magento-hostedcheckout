@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.29.0
+- Fix wrong handling of payment specific information on order page
+
 #### 1.28.0
 - Fix comma separated email validation in notification settings
 
