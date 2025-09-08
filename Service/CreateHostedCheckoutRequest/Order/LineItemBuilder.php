@@ -143,9 +143,12 @@ class LineItemBuilder
 
         foreach ($lineItems as $lineItem) {
             $totalAmount += $lineItem->getAmountOfMoney()->getAmount();
-            $productPrice += $lineItem->getOrderLineDetails()->getProductPrice() * $lineItem->getOrderLineDetails()->getQuantity();
-            $totalDiscount += $lineItem->getOrderLineDetails()->getDiscountAmount() * $lineItem->getOrderLineDetails()->getQuantity();
-            $totalTax += $lineItem->getOrderLineDetails()->getTaxAmount() * $lineItem->getOrderLineDetails()->getQuantity();
+            $productPrice +=
+                $lineItem->getOrderLineDetails()->getProductPrice() * $lineItem->getOrderLineDetails()->getQuantity();
+            $totalDiscount +=
+                $lineItem->getOrderLineDetails()->getDiscountAmount() * $lineItem->getOrderLineDetails()->getQuantity();
+            $totalTax +=
+                $lineItem->getOrderLineDetails()->getTaxAmount() * $lineItem->getOrderLineDetails()->getQuantity();
         }
 
         return [
@@ -217,7 +220,8 @@ class LineItemBuilder
             $type = $product->getOrderLineDetails()->getProductType();
             $names[] = $product->getOrderLineDetails()->getProductName();
             if ($type !== null) {
-                $type = MealvouchersProductTypes::optionsMap()[$type];
+                $mealvoucherTypes = new MealvouchersProductTypes();
+                $type = $mealvoucherTypes->optionsMap()[$type];
                 if (!isset($typeCounts[$type])) {
                     $typeCounts[$type] = 0;
                 }

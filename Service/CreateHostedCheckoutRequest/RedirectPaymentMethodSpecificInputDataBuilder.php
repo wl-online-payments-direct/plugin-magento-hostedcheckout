@@ -39,8 +39,7 @@ class RedirectPaymentMethodSpecificInputDataBuilder
         RedirectPaymentMethodSpecificInputFactory      $redirectPaymentMethodSpecificInputFactory,
         RedirectPaymentProduct5408SpecificInputFactory $paymentProduct5408SIFactory,
         RedirectPaymentProduct5403SpecificInputFactory $paymentProduct5403SIFactory
-    )
-    {
+    ) {
         $this->config = $config;
         $this->redirectPaymentMethodSpecificInputFactory = $redirectPaymentMethodSpecificInputFactory;
         $this->paymentProduct5408SIFactory = $paymentProduct5408SIFactory;

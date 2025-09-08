@@ -87,6 +87,8 @@ class CreateHostedCheckoutRequestBuilder
             $this->hostedMobilePaymentMethodSpecificInputBuilder->build($quote)
         );
 
+        $createHostedCheckoutRequest->getOrder()->getCustomer()->getDevice()->setIpAddress(null);
+
         return $createHostedCheckoutRequest;
     }
 }

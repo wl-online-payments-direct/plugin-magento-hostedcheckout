@@ -61,7 +61,10 @@ class ShoppingCartDataBuilder
         }
 
         if ($quote->getPayment()->getData('method') === self::WORLD_LINE_MEAL_VAUCHER_METHOD) {
-            $lineItems =  $this->lineItemBuilder->buildMergedProduct($lineItems, (string)$quote->getCurrency()->getQuoteCurrencyCode());
+            $lineItems = $this->lineItemBuilder->buildMergedProduct(
+                $lineItems,
+                (string)$quote->getCurrency()->getQuoteCurrencyCode()
+            );
         }
         $lineItems = $this->adjustAmount($lineItems, $quote, $cartTotal);
 
