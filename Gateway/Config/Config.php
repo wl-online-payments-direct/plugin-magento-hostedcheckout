@@ -20,7 +20,6 @@ class Config extends PaymentGatewayConfig
     public const KEY_ACTIVE = 'active';
     public const KEY_CART_LINES = 'cart_lines';
     public const ENABLE_GROUP_CARDS = 'enable_group_cards';
-    public const PROCESS_MEALVOUCHERS = 'process_mealvouchers';
     public const ONEY_PAYMENT_OPTION = 'oney3x4x_payment_option';
     public const ALLOW_ATTEMPTS = 'allow_attempts';
     public const SESSION_TIMEOUT = 'session_timeout';
@@ -88,11 +87,6 @@ class Config extends PaymentGatewayConfig
     public function isGroupCardsEnabled(?int $storeId = null): bool
     {
         return (bool) $this->getValue(self::ENABLE_GROUP_CARDS, $storeId);
-    }
-
-    public function isProcessMealvouchers(?int $storeId = null): bool
-    {
-        return (bool) $this->getValue(self::PROCESS_MEALVOUCHERS, $storeId);
     }
 
     public function getOneyPaymentOption(?int $storeId = null): string
