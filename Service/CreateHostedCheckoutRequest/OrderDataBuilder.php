@@ -7,7 +7,6 @@ use Magento\Framework\Event\ManagerInterface;
 use Magento\Payment\Gateway\Config\Config;
 use Magento\Quote\Api\Data\CartInterface;
 use OnlinePayments\Sdk\Domain\Order;
-use Worldline\HostedCheckout\Model\MealvouchersProductTypeBuilder;
 use Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order\ShoppingCartDataBuilder;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
 use Worldline\PaymentCore\Api\Config\GeneralSettingsConfigInterface;
@@ -40,11 +39,6 @@ class OrderDataBuilder
     private $shoppingCartDataBuilder;
 
     /**
-     * @var MealvouchersProductTypeBuilder
-     */
-    private $mealvouchersProductTypeBuilder;
-
-    /**
      * @var SurchargeDataBuilderInterface
      */
     private $surchargeDataBuilder;
@@ -64,7 +58,6 @@ class OrderDataBuilder
         MethodNameExtractorInterface $methodNameExtractor,
         GeneralDataBuilderInterface $generalOrderDataBuilder,
         ShoppingCartDataBuilder $shoppingCartDataBuilder,
-        MealvouchersProductTypeBuilder $mealvouchersProductTypeBuilder,
         SurchargeDataBuilderInterface $surchargeDataBuilder,
         GeneralSettingsConfigInterface $generalSettings,
         array $configProviders = []
@@ -73,7 +66,6 @@ class OrderDataBuilder
         $this->methodNameExtractor = $methodNameExtractor;
         $this->generalOrderDataBuilder = $generalOrderDataBuilder;
         $this->shoppingCartDataBuilder = $shoppingCartDataBuilder;
-        $this->mealvouchersProductTypeBuilder = $mealvouchersProductTypeBuilder;
         $this->surchargeDataBuilder = $surchargeDataBuilder;
         $this->generalSettings = $generalSettings;
         $this->configProviders = $configProviders;
@@ -97,10 +89,6 @@ class OrderDataBuilder
 
         if (!$config instanceof Config || !$config->isCartLines($storeId)) {
             return $order;
-        }
-
-        if ($config->isProcessMealvouchers($storeId)) {
-            $this->mealvouchersProductTypeBuilder->shapeMealvouchersProductType($quote);
         }
 
         if ($cart = $this->shoppingCartDataBuilder->build($quote)) {
