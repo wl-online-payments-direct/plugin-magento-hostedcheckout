@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+#### 1.34.0
+- Add new payment method: Pledg
+
 #### 1.33.0
 - Remove MealVouchers configuration from hosted checkout
 - Fix mobile payment method information not being shown in order details

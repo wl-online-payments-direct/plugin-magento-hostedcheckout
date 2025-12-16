@@ -118,7 +118,16 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="debug" translate="label" type="select" sortOrder="140" showInDefault="1" showInWebsite="1">
+                <field id="fixed_soft_descriptor" translate="label tooltip" type="text" sortOrder="140" showInDefault="1" showInWebsite="1">
+                    <label>Fixed soft descriptor</label>
+                    <tooltip><![CDATA[Minimum 2, maximum 15 characters. You can specify a fixed value that will be sent to the banks handling the payment. If the consumer's bank is supporting that, this value can be displayed on the consumer's bank slip. Important note : setting a value here is mandatory in order to use Pledg payment method.]]></tooltip>
+                    <validate>validate-length minimum-length-2 maximum-length-15</validate>
+                    <config_path>payment/worldline_hosted_checkout/fixed_soft_descriptor</config_path>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="debug" translate="label" type="select" sortOrder="150" showInDefault="1" showInWebsite="1">
                     <label>Debug</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
@@ -126,7 +135,7 @@
                     </depends>
                     <config_path>payment/worldline_hosted_checkout/debug</config_path>
                 </field>
-                <field id="sort_order" type="text" translate="label" sortOrder="150" showInDefault="1" showInWebsite="1">
+                <field id="sort_order" type="text" translate="label" sortOrder="160" showInDefault="1" showInWebsite="1">
                     <label>Sort</label>
                     <validate>validate-digits validate-zero-or-greater</validate>
                     <depends>
@@ -134,7 +143,7 @@
                     </depends>
                     <config_path>payment/worldline_hosted_checkout/sort_order</config_path>
                 </field>
-                <field id="payment_action" type="select" translate="label" sortOrder="160" showInDefault="1" showInWebsite="1">
+                <field id="payment_action" type="select" translate="label" sortOrder="170" showInDefault="1" showInWebsite="1">
                     <label>Payment Action</label>
                     <source_model>Worldline\PaymentCore\Model\Config\Source\PaymentActionOptions</source_model>
                     <depends>
@@ -142,7 +151,7 @@
                     </depends>
                     <config_path>payment/worldline_hosted_checkout/payment_action</config_path>
                 </field>
-                <field id="authorization_mode" type="select" translate="label" sortOrder="170" showInDefault="1" showInWebsite="1">
+                <field id="authorization_mode" type="select" translate="label" sortOrder="180" showInDefault="1" showInWebsite="1">
                     <label>Authorization Mode</label>
                     <source_model>Worldline\PaymentCore\Model\Config\Source\AuthorizationModeOptions</source_model>
                     <depends>
@@ -151,7 +160,7 @@
                     </depends>
                     <config_path>payment/worldline_hosted_checkout/authorization_mode</config_path>
                 </field>
-                <field id="order_status" type="select" translate="label" sortOrder="180" showInDefault="1" showInWebsite="1">
+                <field id="order_status" type="select" translate="label" sortOrder="190" showInDefault="1" showInWebsite="1">
                     <label>Default Order Status</label>
                     <source_model>Worldline\PaymentCore\Model\Config\Source\OrderStatusOptions</source_model>
                     <depends>
@@ -159,7 +168,7 @@
                     </depends>
                     <config_path>payment/worldline_hosted_checkout/order_status</config_path>
                 </field>
-                <field id="cart_lines" translate="label tooltip" type="select" sortOrder="190" showInDefault="1" showInWebsite="1">
+                <field id="cart_lines" translate="label tooltip" type="select" sortOrder="200" showInDefault="1" showInWebsite="1">
                     <label>Submit Customer Cart Items Data to Worldline</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>payment/worldline_hosted_checkout/cart_lines</config_path>
