@@ -5,9 +5,9 @@ namespace Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest;
 
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Quote\Api\Data\CartInterface;
-use Magento\Store\Model\StoreManagerInterface;
 use OnlinePayments\Sdk\Domain\Customer;
 use OnlinePayments\Sdk\Domain\Order;
+use OnlinePayments\Sdk\Domain\OrderReferences;
 use Worldline\HostedCheckout\Gateway\Config\Config;
 use Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order\ShoppingCartDataBuilder;
 use Worldline\HostedCheckout\Ui\ConfigProvider;
@@ -18,6 +18,9 @@ use Worldline\PaymentCore\Api\Service\CreateRequest\Order\GeneralDataBuilderInte
 use Worldline\PaymentCore\Api\Service\CreateRequest\Order\SurchargeDataBuilderInterface;
 use Magento\Framework\Locale\Resolver;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class OrderDataBuilder
 {
     public const ORDER_DATA = 'order_data';
@@ -57,11 +60,7 @@ class OrderDataBuilder
      */
     private $configProviders;
 
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
-
+    /** @var Config */
     private $hostedConfig;
 
     /** @var Resolver */
@@ -74,9 +73,8 @@ class OrderDataBuilder
         ShoppingCartDataBuilder                          $shoppingCartDataBuilder,
         SurchargeDataBuilderInterface                    $surchargeDataBuilder,
         GeneralSettingsConfigInterface                   $generalSettings,
-        StoreManagerInterface                            $storeManager,
-        Config $hostedConfig,
-        Resolver $localeResolver,
+        Config                                           $hostedConfig,
+        Resolver                                         $localeResolver,
         array                                            $configProviders = []
     ) {
         $this->eventManager = $eventManager;
@@ -85,7 +83,6 @@ class OrderDataBuilder
         $this->shoppingCartDataBuilder = $shoppingCartDataBuilder;
         $this->surchargeDataBuilder = $surchargeDataBuilder;
         $this->generalSettings = $generalSettings;
-        $this->storeManager = $storeManager;
         $this->hostedConfig = $hostedConfig;
         $this->localeResolver = $localeResolver;
         $this->configProviders = $configProviders;
@@ -179,7 +176,7 @@ class OrderDataBuilder
         );
 
         if (!$descriptor) {
-            $descriptor = $this->storeManager->getStore($storeId)->getName();
+            $descriptor = $quote->getStore()->getName();
         }
 
         $order->getReferences()->setDescriptor(substr($descriptor, 0, 15));
