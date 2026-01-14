@@ -6,6 +6,7 @@ namespace Worldline\HostedCheckout\Ui;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Model\Quote;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Worldline\HostedCheckout\Gateway\Config\Config;
@@ -95,10 +96,18 @@ class ConfigProvider implements ConfigProviderInterface
     {
         $quote = $this->checkoutSession->getQuote();
         $icons = $this->iconProvider->getIcons($storeId);
-        if ((float)$quote->getGrandTotal() < 0.00001) {
-            unset($icons[PaymentProductsDetailsInterface::SEPA_DIRECT_DEBIT_PRODUCT_ID]);
-        }
+
+        $this->unsetUnavailableTypes($icons, $quote);
 
         return $icons;
+    }
+
+    private function unsetUnavailableTypes(array &$icons, Quote $quote): void
+    {
+        unset($icons[PaymentProductsDetailsInterface::MEALVOUCHERS_PRODUCT_ID]);
+
+        if ($quote->getGrandTotal() < 0.00001) {
+            unset($icons[PaymentProductsDetailsInterface::SEPA_DIRECT_DEBIT_PRODUCT_ID]);
+        }
     }
 }
