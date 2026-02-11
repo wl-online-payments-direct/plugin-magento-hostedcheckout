@@ -101,7 +101,6 @@ class ConfigProvider implements ConfigProviderInterface
 
         return $icons;
     }
-
     private function unsetUnavailableTypes(array &$icons, Quote $quote): void
     {
         unset($icons[PaymentProductsDetailsInterface::MEALVOUCHERS_PRODUCT_ID]);

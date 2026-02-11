@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Gateway\Http\Client;
 
+use Worldline\PaymentCore\Api\Config\GeneralSettingsConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use OnlinePayments\Sdk\Domain\GetHostedCheckoutResponse;
 use Psr\Log\LoggerInterface;
@@ -17,10 +18,19 @@ class TransactionSale extends AbstractTransaction
      */
     private $request;
 
-    public function __construct(LoggerInterface $logger, GetHostedCheckoutStatusService $request)
-    {
+    /**
+     * @var GeneralSettingsConfigInterface
+     */
+    private $generalSettings;
+
+    public function __construct(
+        LoggerInterface                $logger,
+        GetHostedCheckoutStatusService $request,
+        GeneralSettingsConfigInterface $generalSettings
+    ) {
         parent::__construct($logger);
         $this->request = $request;
+        $this->generalSettings = $generalSettings;
     }
 
     /**
@@ -30,7 +40,7 @@ class TransactionSale extends AbstractTransaction
      */
     protected function process(array $data): GetHostedCheckoutResponse
     {
-        $hostedCheckoutId = (string) ($data[PaymentDataBuilder::HOSTED_CHECKOUT_ID] ?? '');
+        $hostedCheckoutId = (string)($data[PaymentDataBuilder::HOSTED_CHECKOUT_ID] ?? '');
         if (!$hostedCheckoutId) {
             throw new LocalizedException(__('Hosted checkout id is missing'));
         }
@@ -66,7 +76,18 @@ class TransactionSale extends AbstractTransaction
                 'transaction_amount_of_money' => $transactionAmount,
                 'order_amount_of_money' => $orderAmount,
             ]);
-            throw new LocalizedException(__('Wrong amount'));
+
+            $this->logger->warning(__('Order with amount discrepancy created'), [
+                'quote_id' => $paymentOutput->getMerchantParameters(),
+                'order_amount' => $orderAmount,
+                'paid_amount' => $transactionAmount,
+                'discrepancy' => $transactionAmount - $orderAmount
+            ]);
+
+            if (!$this->generalSettings->isAmountDiscrepancyEnabled()) {
+                $this->logger->info(__('Skipping order creation due to amount discrepancy'), []);
+                throw new LocalizedException(__('Wrong amount'));
+            }
         }
     }
 }

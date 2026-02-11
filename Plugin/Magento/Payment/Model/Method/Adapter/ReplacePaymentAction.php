@@ -3,11 +3,14 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Plugin\Magento\Payment\Model\Method\Adapter;
 
+use Worldline\PaymentCore\Model\Order\ValidatorPool\DiscrepancyValidator;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Model\Method\Adapter;
 use Worldline\HostedCheckout\Model\Config\PaymentActionReplaceHandlerInterface;
 use Worldline\HostedCheckout\Model\Data\OrderPaymentContainer;
 use Worldline\HostedCheckout\Gateway\Config\Config;
 use Worldline\HostedCheckout\Service\CreateHostedCheckoutRequest\Order\ShoppingCartDataBuilder;
+use Magento\Sales\Model\Order\Payment;
 
 class ReplacePaymentAction
 {
@@ -23,10 +26,19 @@ class ReplacePaymentAction
      */
     private $orderPaymentContainer;
 
-    public function __construct(OrderPaymentContainer $orderPaymentContainer, $handlers = [])
-    {
+    /**
+     * @var DiscrepancyValidator
+     */
+    private $discrepancyValidator;
+
+    public function __construct(
+        OrderPaymentContainer $orderPaymentContainer,
+        DiscrepancyValidator $discrepancyValidator,
+        $handlers = []
+    ) {
         $this->handlers = $handlers;
         $this->orderPaymentContainer = $orderPaymentContainer;
+        $this->discrepancyValidator = $discrepancyValidator;
     }
 
     /**
@@ -44,6 +56,10 @@ class ReplacePaymentAction
             return Config::AUTHORIZE_CAPTURE;
         }
 
+        if ($this->isOrderWithDiscrepancy($subject)) {
+            return Config::AUTHORIZE;
+        }
+
         if (!$payment = $this->orderPaymentContainer->getPayment()) {
             return $result;
         }
@@ -59,5 +75,25 @@ class ReplacePaymentAction
         }
 
         return $result;
+    }
+
+    /**
+     * @param Adapter $subject
+     *
+     * @return bool
+     * @throws LocalizedException
+     */
+    private function isOrderWithDiscrepancy(Adapter $subject): bool
+    {
+        $payment = $subject->getInfoInstance();
+
+        if ($payment instanceof Payment && strpos($payment->getMethod(), 'worldline') === 0) {
+            $order = $payment->getOrder();
+            $incrementId = $order->getIncrementId();
+
+            return $this->discrepancyValidator->compareAmounts((float)$order->getGrandTotal(), $incrementId);
+        }
+
+        return false;
     }
 }

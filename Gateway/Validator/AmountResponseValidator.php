@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Worldline\HostedCheckout\Gateway\Validator;
 
+use Worldline\PaymentCore\Api\Config\GeneralSettingsConfigInterface;
 use Magento\Payment\Gateway\Validator\AbstractValidator;
 use Magento\Payment\Gateway\Validator\ResultInterface;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
@@ -22,14 +23,21 @@ class AmountResponseValidator extends AbstractValidator
      */
     private $amountFormatter;
 
+    /**
+     * @var GeneralSettingsConfigInterface
+     */
+    private $generalSettings;
+
     public function __construct(
         ResultInterfaceFactory $resultFactory,
         SubjectReaderInterface $subjectReader,
-        AmountFormatterInterface $amountFormatter
+        AmountFormatterInterface $amountFormatter,
+        GeneralSettingsConfigInterface $generalSettings
     ) {
         parent::__construct($resultFactory);
         $this->subjectReader = $subjectReader;
         $this->amountFormatter = $amountFormatter;
+        $this->generalSettings = $generalSettings;
     }
 
     public function validate(array $validationSubject): ResultInterface
@@ -45,10 +53,13 @@ class AmountResponseValidator extends AbstractValidator
             $transactionAmountOfMoney += $surchargeAmount;
         }
 
-        $totalAmount = (float) $validationSubject['payment']->getPayment()->getOrder()->getGrandTotal();
-        $currency = (string) $validationSubject['payment']->getPayment()->getOrder()->getOrderCurrencyCode();
+        $totalAmount = (float)$validationSubject['payment']->getPayment()->getOrder()->getGrandTotal();
+        $currency = (string)$validationSubject['payment']->getPayment()->getOrder()->getOrderCurrencyCode();
         $orderAmountOfMoney = $this->amountFormatter->formatToInteger($totalAmount, $currency);
 
-        return $this->createResult($transactionAmountOfMoney === $orderAmountOfMoney);
+        return $this->createResult(
+            $this->generalSettings->isAmountDiscrepancyEnabled() ||
+            $transactionAmountOfMoney === $orderAmountOfMoney
+        );
     }
 }

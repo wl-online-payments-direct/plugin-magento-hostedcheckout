@@ -10,12 +10,16 @@ class ExemptionType implements OptionSourceInterface
     {
         return [
             [
+                'value' => 'none',
+                'label' => __('Preference: No challenge request')
+            ],
+            [
                 'value' => 'low-value',
-                'label' => __('Low-value (default)')
+                'label' => __('Exemption: Low-value')
             ],
             [
                 'value' => 'transaction-risk-analysis',
-                'label' => __('Transaction Risk Analysis')
+                'label' => __('Exemption: Transaction Risk Analysis (acquirer)')
             ]
         ];
     }

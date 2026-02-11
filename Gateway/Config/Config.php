@@ -16,6 +16,7 @@ class Config extends PaymentGatewayConfig
     public const AUTHORIZATION_MODE_PRE = 'PRE_AUTHORIZATION';
     public const AUTHORIZATION_MODE_SALE = 'SALE';
     public const AUTHORIZE_CAPTURE = 'authorize_capture';
+    public const AUTHORIZE = 'authorize';
     public const TEMPLATE_ID = 'template_id';
     public const KEY_ACTIVE = 'active';
     public const KEY_CART_LINES = 'cart_lines';
