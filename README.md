@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+### 1.42.0
+- Fix order creation when 3DS exemption configuration is disabled
+
 ### 1.40.0
 - Fix: Stability for 3DS exemption capabilities
 
