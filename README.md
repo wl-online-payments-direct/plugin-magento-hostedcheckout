@@ -17,15 +17,21 @@ This solution is also included into:
 
 ### Change log:
 
+### 1.43.0
+- Updated: Change iDEAL logo and label
+- Updated: Branding of Pledg changed to Sofinco
+
 ### 1.42.0
 - Fix order creation when 3DS exemption configuration is disabled
 
+### 1.41.0
+- Improved order creation process when there is an amount discrepancy
+
 ### 1.40.0
-- Fix: Stability for 3DS exemption capabilities
+- Added: new 3-D Secure exemption flow (preference for no challenge)
 
 ### 1.39.0
-- Improved exemptions capabilities related to 3DS exemption types
-- Added phone number formatter for sending API requests
+- Added: Phone number formatter used when sending API requests to use the international format.
 
 ### 1.38.0
 - Removed Mealvouchers logo from checkout page when using "Hosted Checkout (redirect to Worldline)"

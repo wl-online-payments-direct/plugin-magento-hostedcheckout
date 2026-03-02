@@ -120,7 +120,7 @@
                 </field>
                 <field id="fixed_soft_descriptor" translate="label tooltip" type="text" sortOrder="140" showInDefault="1" showInWebsite="1">
                     <label>Fixed soft descriptor</label>
-                    <tooltip><![CDATA[Minimum 2, maximum 15 characters. You can specify a fixed value that will be sent to the banks handling the payment. If the consumer's bank is supporting that, this value can be displayed on the consumer's bank slip. Important note : setting a value here is mandatory in order to use Pledg payment method.]]></tooltip>
+                    <tooltip><![CDATA[Minimum 2, maximum 15 characters. You can specify a fixed value that will be sent to the banks handling the payment. If the consumer's bank is supporting that, this value can be displayed on the consumer's bank slip. Important note : setting a value here is mandatory in order to use Sofinco payment method.]]></tooltip>
                     <validate>validate-length minimum-length-2 maximum-length-15</validate>
                     <config_path>payment/worldline_hosted_checkout/fixed_soft_descriptor</config_path>
                     <depends>
