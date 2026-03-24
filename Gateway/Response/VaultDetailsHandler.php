@@ -77,7 +77,7 @@ class VaultDetailsHandler implements HandlerInterface
             ->getPaymentOutput()
             ->getCardPaymentMethodSpecificOutput();
 
-        if (!$cardPaymentMethodSpecificOutput) {
+        if (!$cardPaymentMethodSpecificOutput || !$cardPaymentMethodSpecificOutput->getCard()) {
             return null;
         }
 
