@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+### 1.47.0
+- Fixed: Handle formatting phone number when it is optional
+
 ### 1.46.0
 - Fixed: Creating an online invoice for orders
 - Fixed: Amount discrepancy check for non-worldline methods
