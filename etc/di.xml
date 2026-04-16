@@ -62,6 +62,7 @@
                 <item name="ideal" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\IDealHandler\Proxy</item>
                 <item name="wechat_pay" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\WechatPayHandler\Proxy</item>
                 <item name="bank_transfer" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\BankTransferHandler\Proxy</item>
+                <item name="linxo_connect" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\LinxoConnectHandler\Proxy</item>
             </argument>
         </arguments>
     </type>
@@ -106,6 +107,7 @@
         <arguments>
             <argument name="customProcessorStrategies" xsi:type="array">
                 <item name="sepa_capture_strategy" xsi:type="object">Worldline\HostedCheckout\Model\Webhook\SepaCustomProcessorStrategy\Proxy</item>
+                <item name="linxo_connect_capture_strategy" xsi:type="object">Worldline\HostedCheckout\Model\Webhook\LinxoConnectCustomProcessorStrategy\Proxy</item>
             </argument>
         </arguments>
     </type>

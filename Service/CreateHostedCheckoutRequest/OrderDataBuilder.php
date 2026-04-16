@@ -104,21 +104,8 @@ class OrderDataBuilder
         $args = ['quote' => $quote, self::ORDER_DATA => $order];
         $this->eventManager->dispatch(ConfigProvider::HC_CODE . '_order_data_builder', $args);
 
-        $paymentProductId = (int)$quote->getPayment()->getAdditionalInformation('selected_payment_product');
-        if ($paymentProductId === PaymentProductsDetailsInterface::PLEDG_PRODUCT_ID) {
-            $this->applyPledgData($order, $quote);
-        }
-
-        if (!$paymentProductId) {
-            $descriptor = $this->hostedConfig->getValue(
-                'fixed_soft_descriptor',
-                $storeId
-            );
-
-            $references = $order->getReferences() ?? new OrderReferences();
-            $references->setDescriptor($descriptor);
-            $order->setReferences($references);
-        }
+        $this->applyPaymentProductData($quote, $order);
+        $this->applyDescriptor($quote, $order, $storeId);
 
         if (!$config instanceof Config || !$config->isCartLines($storeId)) {
             return $order;
@@ -136,9 +123,75 @@ class OrderDataBuilder
         return $order;
     }
 
+    /**
+     * @param CartInterface $quote
+     * @param Order $order
+     * @param int $storeId
+     */
+    private function applyDescriptor(CartInterface $quote, Order $order, int $storeId): void
+    {
+        $paymentProductId = (int)$quote->getPayment()
+            ->getAdditionalInformation('selected_payment_product');
+
+        if ($paymentProductId) {
+            return;
+        }
+
+        $descriptor = $this->hostedConfig->getValue(
+            'fixed_soft_descriptor',
+            $storeId
+        );
+
+        $references = $order->getReferences() ?? new OrderReferences();
+        $references->setDescriptor($descriptor);
+        $order->setReferences($references);
+    }
+
+    /**
+     * @param CartInterface $quote
+     * @param Order $order
+     */
+    private function applyPaymentProductData(CartInterface $quote, Order $order): void
+    {
+        $paymentProductId = (int)$quote->getPayment()
+            ->getAdditionalInformation('selected_payment_product');
+
+        if ($paymentProductId === PaymentProductsDetailsInterface::PLEDG_PRODUCT_ID) {
+            $this->applyPledgData($order, $quote);
+        }
+
+        if ($paymentProductId === PaymentProductsDetailsInterface::LINXO_CONNECT_PRODUCT_ID) {
+            $this->applyLinxoConnectData($order, $quote);
+        }
+    }
+
+    private function applyLinxoConnectData(Order $order, CartInterface $quote): void
+    {
+        $this->applyCommonRedirectData($order, $quote);
+    }
+
     private function applyPledgData(Order $order, CartInterface $quote): void
     {
+        $this->applyCommonRedirectData($order, $quote);
+
         $billing = $quote->getBillingAddress();
+        $customer = $order->getCustomer();
+
+        $name = $customer->getPersonalInformation()->getName();
+        $name->setFirstName($billing->getFirstname());
+        $name->setSurname($billing->getLastname());
+
+        $billingInput = $customer->getBillingAddress();
+        $billingInput->setCountryCode($billing->getCountryId());
+        $billingInput->setCity($billing->getCity());
+        $billingInput->setZip($billing->getPostcode());
+        $billingInput->setStreet($billing->getStreetLine(1) ?: '');
+
+        $customer->setBillingAddress($billingInput);
+    }
+
+    private function applyCommonRedirectData(Order $order, CartInterface $quote): void
+    {
         $storeId = (int)$quote->getStoreId();
 
         $customer = $order->getCustomer();
@@ -155,29 +208,9 @@ class OrderDataBuilder
             $quote->getCustomerEmail()
         );
 
-        $name = $customer->getPersonalInformation()->getName();
-        $name->setFirstName($billing->getFirstname());
-        $name->setSurname($billing->getLastname());
+        $customer->setLocale($this->localeResolver->getLocale());
 
-        $billingInput = $customer->getBillingAddress();
-        $billingInput->setCountryCode($billing->getCountryId());
-        $billingInput->setCity($billing->getCity());
-        $billingInput->setZip($billing->getPostcode());
-        $billingInput->setStreet($billing->getStreetLine(1) ?: '');
-
-        $customer->setBillingAddress($billingInput);
-
-        $locale = $this->localeResolver->getLocale();
-        $customer->setLocale($locale);
-
-        $descriptor = $this->hostedConfig->getValue(
-            'fixed_soft_descriptor',
-            $storeId
-        );
-
-        if (!$descriptor) {
-            $descriptor = $quote->getStore()->getName();
-        }
+        $descriptor = $this->hostedConfig->getValue('fixed_soft_descriptor', $storeId) ?: $quote->getStore()->getName();
 
         $order->getReferences()->setDescriptor(substr($descriptor, 0, 15));
     }

@@ -65,7 +65,8 @@ class RedirectPaymentMethodSpecificInputDataBuilder
             (
                 $paymentProductId === PaymentProductsDetailsInterface::CHEQUE_VACANCES_CONNECT_PRODUCT_ID
                 || $paymentProductId === PaymentProductsDetailsInterface::MEALVOUCHERS_PRODUCT_ID
-                || $paymentProductId === PaymentProductsDetailsInterface::PLEDG_PRODUCT_ID)) {
+                || $paymentProductId === PaymentProductsDetailsInterface::PLEDG_PRODUCT_ID
+                || $paymentProductId === PaymentProductsDetailsInterface::LINXO_CONNECT_PRODUCT_ID)) {
             $redirectPaymentMethodSpecificInput->setRequiresApproval(false);
         } else {
             $redirectPaymentMethodSpecificInput->setRequiresApproval($authMode !== Config::AUTHORIZATION_MODE_SALE);

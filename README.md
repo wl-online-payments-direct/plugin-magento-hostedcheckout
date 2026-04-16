@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+### 1.48.0
+- Added: Linxo Connect payment method
+
 ### 1.47.0
 - Fixed: Handle formatting phone number when it is optional
 
