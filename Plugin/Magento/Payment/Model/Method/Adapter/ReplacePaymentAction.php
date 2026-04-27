@@ -15,6 +15,7 @@ use Magento\Sales\Model\Order\Payment;
 class ReplacePaymentAction
 {
     public const WORLD_LINE_CHEQUE_VACANCES_ONLINE_METHOD = 'worldline_redirect_payment_5403';
+    public const WORLD_LINE_ILLICADO_METHOD = 'worldline_redirect_payment_3112';
 
     /**
      * @var PaymentActionReplaceHandlerInterface[]
@@ -52,7 +53,8 @@ class ReplacePaymentAction
     public function afterGetConfigPaymentAction(Adapter $subject, ?string $result = null): ?string
     {
         if ($subject->getCode() === self::WORLD_LINE_CHEQUE_VACANCES_ONLINE_METHOD
-         || $subject->getCode() === ShoppingCartDataBuilder::WORLD_LINE_MEAL_VAUCHER_METHOD) {
+         || $subject->getCode() === ShoppingCartDataBuilder::WORLD_LINE_MEAL_VAUCHER_METHOD
+         || $subject->getCode() === self::WORLD_LINE_ILLICADO_METHOD) {
             return Config::AUTHORIZE_CAPTURE;
         }
 

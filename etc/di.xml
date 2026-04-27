@@ -63,6 +63,7 @@
                 <item name="wechat_pay" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\WechatPayHandler\Proxy</item>
                 <item name="bank_transfer" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\BankTransferHandler\Proxy</item>
                 <item name="linxo_connect" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\LinxoConnectHandler\Proxy</item>
+                <item name="illicado" xsi:type="object">Worldline\HostedCheckout\Model\Config\PaymentAction\IllicadoHandler\Proxy</item>
             </argument>
         </arguments>
     </type>

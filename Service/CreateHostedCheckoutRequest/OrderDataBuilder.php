@@ -163,6 +163,10 @@ class OrderDataBuilder
         if ($paymentProductId === PaymentProductsDetailsInterface::LINXO_CONNECT_PRODUCT_ID) {
             $this->applyLinxoConnectData($order, $quote);
         }
+
+        if ($paymentProductId === PaymentProductsDetailsInterface::ILLICADO_PRODUCT_ID) {
+            $this->applyIllicadoData($order, $quote);
+        }
     }
 
     private function applyLinxoConnectData(Order $order, CartInterface $quote): void
@@ -212,6 +216,13 @@ class OrderDataBuilder
 
         $descriptor = $this->hostedConfig->getValue('fixed_soft_descriptor', $storeId) ?: $quote->getStore()->getName();
 
-        $order->getReferences()->setDescriptor(substr($descriptor, 0, 15));
+        $references = $order->getReferences() ?? new OrderReferences();
+        $references->setDescriptor(substr($descriptor, 0, 15));
+        $order->setReferences($references);
+    }
+
+    private function applyIllicadoData(Order $order, CartInterface $quote): void
+    {
+        $this->applyCommonRedirectData($order, $quote);
     }
 }

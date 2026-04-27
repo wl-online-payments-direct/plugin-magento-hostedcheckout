@@ -253,7 +253,7 @@ class LineItemBuilder
         $orderLineDetails->setProductCode($item->getSku());
         $orderLineDetails->setProductName($item->getName());
         $this->addProductType($item, $orderLineDetails);
-        $orderLineDetails->setQuantity((float)$item->getQty());
+        $orderLineDetails->setQuantity((int)$item->getQty());
 
         if (floor($item->getQty()) < $item->getQty()) {
             $orderLineDetails->setProductName($item->getName() . ' (quantity ' . $item->getQty() . ')');
