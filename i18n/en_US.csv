@@ -1,4 +1,7 @@
 "Authorization Mode","Authorization Mode"
+"Display payment confirmation page","Display payment confirmation page"
+"By enabling this option, your customers will see the Worldline payment confirmation page","By enabling this option, your customers will see the Worldline payment confirmation page"
+"If enabled, customers will see a dedicated confirmation screen after payment is processed, confirming the payment and providing key details.","If enabled, customers will see a dedicated confirmation screen after payment is processed, confirming the payment and providing key details."
 "Configure your payment option as defined on your Oney 3x4x contract. You can find the value directly from your Oney interface.","Configure your payment option as defined on your Oney 3x4x contract. You can find the value directly from your Oney interface."
 "CreateHostedCheckoutApi request has failed. Please contact the provider.","CreateHostedCheckoutApi request has failed. Please contact the provider."
 "Custom Return URL","Custom Return URL"

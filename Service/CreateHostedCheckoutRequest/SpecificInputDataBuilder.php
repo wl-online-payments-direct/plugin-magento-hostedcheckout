@@ -112,6 +112,8 @@ class SpecificInputDataBuilder
             $hostedCheckoutSpecificInput->setVariant($variant);
         }
 
+        $hostedCheckoutSpecificInput->setShowResultPage($this->config->isShowResultPageEnabled($storeId));
+
         /** @var PaymentProductFilter $paymentProductFilterMealVoucher */
         $paymentProductFilterMealVoucher = $this->paymentProductFilterFactory->create();
         $paymentProductFilterMealVoucher->setProducts([PaymentProductsDetailsInterface::MEALVOUCHERS_PRODUCT_ID]);

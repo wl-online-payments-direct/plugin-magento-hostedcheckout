@@ -46,7 +46,10 @@ class AmountResponseValidator extends AbstractValidator
         $response = $this->subjectReader->readResponseObject($validationSubject);
 
         $paymentOutput = $response->getCreatedPaymentOutput()->getPayment()->getPaymentOutput();
-        $transactionAmountOfMoney = $paymentOutput->getAmountOfMoney()->getAmount();
+        $acquired = $paymentOutput->getAcquiredAmount();
+        $transactionAmountOfMoney = ($acquired && $acquired->getAmount())
+            ? $acquired->getAmount()
+            : $paymentOutput->getAmountOfMoney()->getAmount();
 
         if ($paymentOutput->getSurchargeSpecificOutput()) {
             $surchargeAmount = $paymentOutput->getSurchargeSpecificOutput()->getSurchargeAmount()->getAmount();

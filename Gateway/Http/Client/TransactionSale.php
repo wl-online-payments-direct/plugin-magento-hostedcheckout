@@ -65,7 +65,10 @@ class TransactionSale extends AbstractTransaction
     {
         $orderAmount = $data[PaymentDataBuilder::AMOUNT] ?? 0;
         $paymentOutput = $response->getCreatedPaymentOutput()->getPayment()->getPaymentOutput();
-        $transactionAmount = $paymentOutput->getAmountOfMoney()->getAmount();
+        $acquired = $paymentOutput->getAcquiredAmount();
+        $transactionAmount = ($acquired && $acquired->getAmount())
+            ? $acquired->getAmount()
+            : $paymentOutput->getAmountOfMoney()->getAmount();
         if ($paymentOutput->getSurchargeSpecificOutput()) {
             $transactionAmount += $paymentOutput->getSurchargeSpecificOutput()->getSurchargeAmount()->getAmount();
         }

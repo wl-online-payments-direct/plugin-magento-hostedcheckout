@@ -310,7 +310,13 @@ class LineItemBuilder
 
     private function addProductType(CartItemInterface $item, OrderLineDetails $orderLineDetails): void
     {
-        $mealvouchersProductType = $item->getData(MealvouchersProductTypes::MEALVOUCHERS_ATTRIBUTE_CODE);
+        if (!$item->getProduct()) {
+            return;
+        }
+
+        $mealvouchersProductType = $item->getProduct()->getData(
+            MealvouchersProductTypes::MEALVOUCHERS_ATTRIBUTE_CODE
+        );
         if ($mealvouchersProductType && $mealvouchersProductType !== MealvouchersProductTypes::NO) {
             $orderLineDetails->setProductType($mealvouchersProductType);
         }

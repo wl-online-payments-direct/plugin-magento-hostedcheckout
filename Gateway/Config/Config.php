@@ -29,6 +29,7 @@ class Config extends PaymentGatewayConfig
     public const DIRECT_DEBIT_SIGNATURE_TYPE = 'direct_debit_signature_type';
 
     public const BANK_TRANSFER_MODE = 'bank_transfer_mode';
+    public const SHOW_RESULT_PAGE = 'show_result_page';
 
     public const VAULT_PATH = 'payment/worldline_hosted_checkout_vault/active';
 
@@ -108,6 +109,11 @@ class Config extends PaymentGatewayConfig
     public function getBankTransferMode(?int $storeId = null): bool
     {
         return (bool) $this->getValue(self::BANK_TRANSFER_MODE, $storeId);
+    }
+
+    public function isShowResultPageEnabled(?int $storeId = null): bool
+    {
+        return (bool) $this->getValue(self::SHOW_RESULT_PAGE, $storeId);
     }
 
     public function isVaultActive(?int $storeId = null): bool

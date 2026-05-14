@@ -107,7 +107,7 @@ class OrderDataBuilder
         $this->applyPaymentProductData($quote, $order);
         $this->applyDescriptor($quote, $order, $storeId);
 
-        if (!$config instanceof Config || !$config->isCartLines($storeId)) {
+        if (!$config || !method_exists($config, 'isCartLines') || !$config->isCartLines($storeId)) {
             return $order;
         }
 
@@ -167,9 +167,18 @@ class OrderDataBuilder
         if ($paymentProductId === PaymentProductsDetailsInterface::ILLICADO_PRODUCT_ID) {
             $this->applyIllicadoData($order, $quote);
         }
+
+        if ($paymentProductId === PaymentProductsDetailsInterface::MEALVOUCHERS_PRODUCT_ID) {
+            $this->applyMealVoucherData($order, $quote);
+        }
     }
 
     private function applyLinxoConnectData(Order $order, CartInterface $quote): void
+    {
+        $this->applyCommonRedirectData($order, $quote);
+    }
+
+    private function applyMealVoucherData(Order $order, CartInterface $quote): void
     {
         $this->applyCommonRedirectData($order, $quote);
     }
