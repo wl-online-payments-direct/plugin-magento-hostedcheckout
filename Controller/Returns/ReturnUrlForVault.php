@@ -56,7 +56,7 @@ class ReturnUrlForVault extends Action implements HttpGetActionInterface
             $quote = $this->cartRepository->get($quoteId);
             $payment = $quote->getPayment();
 
-            $hostedCheckoutId = (string) (int) $payment->getAdditionalInformation('payment_id');
+            $hostedCheckoutId = (string) $payment->getAdditionalInformation('payment_id');
             $returnId = (string) $payment->getAdditionalInformation('return_id');
 
             /** @var OrderState $orderState */
