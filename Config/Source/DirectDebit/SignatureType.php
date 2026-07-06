@@ -17,6 +17,14 @@ class SignatureType implements OptionSourceInterface
             [
                 'value' => 'UNSIGNED',
                 'label' => __('UNSIGNED'),
+            ],
+            [
+                'value' => 'TICK_BOX',
+                'label' => __('TICK_BOX'),
+            ],
+            [
+                'value' => 'AIS',
+                'label' => __('AIS'),
             ]
         ];
     }
