@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+### 1.55.0
+- Fixed: Fixing security issues
+
 ### 1.54.0
 - Added: New signature types options for SEPA Direct Debit
 

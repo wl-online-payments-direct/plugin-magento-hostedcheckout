@@ -86,6 +86,12 @@ class ReturnRequestProcessor
         }
 
         $payment = $quote->getPayment();
+
+        $expectedReturnId = (string)$payment->getAdditionalInformation('return_id');
+        if ($expectedReturnId === '' || !hash_equals($expectedReturnId, $returnId)) {
+            throw new LocalizedException(__('RETURNMAC validation failed.'));
+        }
+
         $payment->setAdditionalInformation('payment_id', $paymentId);
         $quotePayment = $this->quotePaymentRepository->getByPaymentIdentifier($paymentId);
         $payment->setMethod($quotePayment->getMethod());
