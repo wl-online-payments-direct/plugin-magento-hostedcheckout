@@ -1,1 +1,1 @@
-Built from Worldline-Plugins/plugin-magento-hostedcheckout-PRE-RELEASE@1.55.0 on Tue Jul 21 14:19:58 UTC 2026
+Built from Worldline-Plugins/plugin-magento-hostedcheckout-PRE-RELEASE@1.56.0 on Wed Aug  5 14:04:24 UTC 2026
