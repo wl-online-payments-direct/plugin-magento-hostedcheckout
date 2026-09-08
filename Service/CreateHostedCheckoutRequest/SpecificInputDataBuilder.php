@@ -23,6 +23,7 @@ class SpecificInputDataBuilder
 {
     public const HOSTED_CHECKOUT_SPECIFIC_INPUT = 'hosted_checkout_specific_input';
     public const RETURN_URL = 'wl_hostedcheckout/returns/returnUrl';
+    public const NO_TOKENIZATION = 'noTokenization';
 
     /**
      * @var Config
@@ -105,6 +106,9 @@ class SpecificInputDataBuilder
         /** @var CardPaymentMethodSpecificInputForHostedCheckout $cardPaymentMethodSpecificInputForHC */
         $cardPaymentMethodSpecificInputForHC = $this->cardPaymentMethodDataFactory->create();
         $cardPaymentMethodSpecificInputForHC->setGroupCards($this->config->isGroupCardsEnabled($storeId));
+        if (!$this->config->isVaultActive($storeId) || !$quote->getCustomerId()) {
+            $cardPaymentMethodSpecificInputForHC->setTokenizationMode(self::NO_TOKENIZATION);
+        }
         $hostedCheckoutSpecificInput->setCardPaymentMethodSpecificInput($cardPaymentMethodSpecificInputForHC);
 
         $hostedCheckoutSpecificInput->setReturnUrl($this->generalSettings->getReturnUrl(self::RETURN_URL, $storeId));
