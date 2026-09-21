@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+### 1.58.0
+- Fixed: Adjust tax amounts rounding and prevent a validation amount failure
+
 ### 1.57.0
 - Changed: Card saving now requires an enabled vault and a logged in shopper
 

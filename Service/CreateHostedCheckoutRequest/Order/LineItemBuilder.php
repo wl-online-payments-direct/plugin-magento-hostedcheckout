@@ -260,8 +260,9 @@ class LineItemBuilder
             $orderLineDetails->setQuantity(1);
         }
 
-        $orderLineDetails->setProductPrice($this->getProductPrice($item));
-        $orderLineDetails->setTaxAmount($this->getTaxAmount($item));
+        $taxAmount = $this->getTaxAmount($item);
+        $orderLineDetails->setProductPrice($this->getProductPrice($item, $taxAmount));
+        $orderLineDetails->setTaxAmount($taxAmount);
 
         return $orderLineDetails;
     }
@@ -297,15 +298,47 @@ class LineItemBuilder
             $discountAmount = (float)$item->getDiscountAmount();
         }
 
-        $quantity = $item->getQty();
-
-        if (floor($item->getQty()) < $item->getQty()) {
-            $quantity = 1;
-        }
+        $quantity = $this->getQuantity($item);
 
         $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
 
         return $this->amountFormatter->formatToInteger((float)($discountAmount / $quantity), $currency);
+    }
+
+    /**
+     * Quantity the line is reported with. Fractional quantities are collapsed into a single unit,
+     * the original quantity is then carried in the product name.
+     *
+     * @param CartItemInterface $item
+     *
+     * @return float
+     */
+    private function getQuantity(CartItemInterface $item): float
+    {
+        if (floor($item->getQty()) < $item->getQty()) {
+            return 1.0;
+        }
+
+        return (float)$item->getQty();
+    }
+
+    /**
+     * Tax charged for the whole line, including fixed product taxes
+     *
+     * @param CartItemInterface $item
+     *
+     * @return float
+     */
+    private function getRowTaxAmount(CartItemInterface $item): float
+    {
+        $weeeTaxes = $this->json->unserialize($item->getWeeeTaxApplied() ?? '[]', true);
+        $totalWeeeTaxes = 0;
+
+        foreach ($weeeTaxes as $weeeTax) {
+            $totalWeeeTaxes += (float)($weeeTax['row_amount_incl_tax'] ?? 0);
+        }
+
+        return (float)$item->getTaxAmount() + $totalWeeeTaxes;
     }
 
     private function addProductType(CartItemInterface $item, OrderLineDetails $orderLineDetails): void
@@ -322,42 +355,41 @@ class LineItemBuilder
         }
     }
 
-    private function getProductPrice(CartItemInterface $item): int
+    /**
+     * Net price of a single unit.
+     *
+     * The gross unit price is rounded once and the already rounded tax is subtracted from it, so
+     * that (productPrice + taxAmount) * quantity stays aligned with the row total Magento charges.
+     * Rounding the net price and the tax independently lets both halves round up and inflates the
+     * line by up to one minor unit per item, which the payment API rejects with
+     * "Payment detail amounts validation failed" (SM-284).
+     *
+     * @param CartItemInterface $item
+     * @param int $taxAmount
+     *
+     * @return int
+     */
+    private function getProductPrice(CartItemInterface $item, int $taxAmount): int
     {
         $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
-        $quantity = $item->getQty();
+        $quantity = $this->getQuantity($item);
 
-        if (floor($item->getQty()) < $item->getQty()) {
-            $quantity = 1;
-        }
+        $rowGrossAmount = (float)$item->getRowTotal()
+            + (float)$item->getDiscountTaxCompensationAmount()
+            + $this->getRowTaxAmount($item);
 
-        $compensation = $this->amountFormatter->formatToInteger(
-            (float)($item->getDiscountTaxCompensationAmount() / $quantity),
-            $currency
+        $unitGrossPrice = (int)round(
+            $this->amountFormatter->formatToInteger($rowGrossAmount, $currency) / $quantity
         );
-        $price = $item->getRowTotal() / $quantity;
 
-        return $this->amountFormatter->formatToInteger((float)$price, $currency) + $compensation;
+        return $unitGrossPrice - $taxAmount;
     }
 
     private function getTaxAmount(CartItemInterface $item): int
     {
-        $quantity = $item->getQty();
-
-        if (floor($item->getQty()) < $item->getQty()) {
-            $quantity = 1;
-        }
-
+        $quantity = $this->getQuantity($item);
         $currency = (string)$item->getQuote()->getCurrency()->getQuoteCurrencyCode();
-        $weeeTaxes = $this->json->unserialize($item->getWeeeTaxApplied() ?? '[]', true);
-        $totalWeeeTaxes = 0;
 
-        foreach ($weeeTaxes as $weeeTax) {
-            $totalWeeeTaxes += (float)($weeeTax['row_amount_incl_tax'] ?? 0);
-        }
-
-        $totalTaxes = (float)$item->getTaxAmount() + $totalWeeeTaxes;
-
-        return $this->amountFormatter->formatToInteger($totalTaxes / $quantity, $currency);
+        return $this->amountFormatter->formatToInteger($this->getRowTaxAmount($item) / $quantity, $currency);
     }
 }

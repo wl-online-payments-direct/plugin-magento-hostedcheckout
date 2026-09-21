@@ -82,18 +82,12 @@ class ShoppingCartDataBuilder
 
     public function getDiscountAdjustment(CartInterface $quote, ShoppingCart $cart): ?Discount
     {
-        $cartTotal = 0;
-
-        foreach ($cart->getItems() as $item) {
-            $cartTotal += $item->getAmountOfMoney()->getAmount();
-        }
-
-        $amountDifference = $this->getAmountDifference($quote, $cartTotal);
+        $amountDifference = $this->getAmountDifference($quote, $this->getCartTotal($cart));
         $allowedDifference = $this->getAllowedDifference(
             (string) $quote->getCurrency()->getQuoteCurrencyCode()
         );
 
-        if ($amountDifference < 0 && $amountDifference > -$allowedDifference) {
+        if ($amountDifference < 0 && $amountDifference >= -$allowedDifference) {
             $discount = new Discount();
             $discount->setAmount(-$amountDifference);
 
@@ -129,7 +123,7 @@ class ShoppingCartDataBuilder
      */
     public function getAllowedDifference(string $currency): int
     {
-        $numberOfDecimals = $this->amountFormatter->currencies[$currency] ?? 0;
+        $numberOfDecimals = $this->amountFormatter->getNumberOfDecimals($currency);
         $allowedDifference = 100;
 
         if ($numberOfDecimals === 0) {
@@ -160,7 +154,7 @@ class ShoppingCartDataBuilder
         $currency = (string) $quote->getCurrency()->getQuoteCurrencyCode();
         $allowedDifference = $this->getAllowedDifference($currency);
 
-        if ($amountDifference > 0 && $amountDifference < $allowedDifference) {
+        if ($amountDifference > 0 && $amountDifference <= $allowedDifference) {
             $lineItem = $this->lineItemBuilder->buildAdjustmentLineItem($amountDifference, $currency);
             $lineItems[] = $lineItem;
             $cartTotal += $amountDifference;
@@ -176,5 +170,23 @@ class ShoppingCartDataBuilder
         $currency = (string)$quote->getCurrency()->getQuoteCurrencyCode();
 
         return $difference > 0 || $difference < -$this->getAllowedDifference($currency);
+    }
+
+    /**
+     * Sum of the line item amounts currently held by the cart
+     *
+     * @param ShoppingCart $cart
+     *
+     * @return int
+     */
+    private function getCartTotal(ShoppingCart $cart): int
+    {
+        $cartTotal = 0;
+
+        foreach ($cart->getItems() as $item) {
+            $cartTotal += $item->getAmountOfMoney()->getAmount();
+        }
+
+        return $cartTotal;
     }
 }
