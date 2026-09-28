@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+### 1.59.0
+- Changed: Remove constraint to be logged in for Mealvouchers
+
 ### 1.58.0
 - Fixed: Adjust tax amounts rounding and prevent a validation amount failure
 
