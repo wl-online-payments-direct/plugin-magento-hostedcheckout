@@ -5,6 +5,8 @@ namespace Worldline\HostedCheckout\Plugin\Magento\Checkout\Controller\Cart\Index
 
 use Magento\Checkout\Controller\Index\Index;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Api\Data\CartInterface;
+use Psr\Log\LoggerInterface;
 use Worldline\HostedCheckout\Gateway\Request\PaymentDataBuilder;
 use Worldline\HostedCheckout\Model\AddressSaveProcessor;
 use Worldline\HostedCheckout\Service\HostedCheckout\GetHostedCheckoutStatusService;
@@ -33,14 +35,21 @@ class SaveAddress
      */
     private $paymentInfoCleaner;
 
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
     public function __construct(
         AddressSaveProcessor $addressSaveProcessor,
         GetHostedCheckoutStatusService $hcRequest,
-        PaymentInfoCleanerInterface $paymentInfoCleaner
+        PaymentInfoCleanerInterface $paymentInfoCleaner,
+        LoggerInterface $logger
     ) {
         $this->addressSaveProcessor = $addressSaveProcessor;
         $this->hcRequest = $hcRequest;
         $this->paymentInfoCleaner = $paymentInfoCleaner;
+        $this->logger = $logger;
     }
 
     public function beforeExecute(Index $subject): void
@@ -63,12 +72,32 @@ class SaveAddress
             $hcResponse = $this->hcRequest->execute($hcId, (int)$quote->getStoreId());
             $worldlinePayment = $hcResponse->getCreatedPaymentOutput()->getPayment();
             if (!$worldlinePayment || $worldlinePayment->getStatus() === self::REJECTED) {
-                $this->addressSaveProcessor->saveAddress($quote);
+                $this->saveAddress($quote);
             }
         } catch (LocalizedException $e) {
             //expected behavior when customer presses go back button in their browser at the HC page
-            $this->addressSaveProcessor->saveAddress($quote);
+            $this->saveAddress($quote);
             $this->paymentInfoCleaner->clean($quote);
+        }
+    }
+
+    /**
+     * This plugin runs on every load of the checkout page, so an address that fails validation must not throw:
+     * it would make the checkout unusable for this quote. The address is left unsaved and the customer can
+     * correct it in the checkout.
+     *
+     * @param CartInterface $quote
+     * @return void
+     */
+    private function saveAddress(CartInterface $quote): void
+    {
+        try {
+            $this->addressSaveProcessor->saveAddress($quote);
+        } catch (\Exception $e) {
+            $this->logger->warning(
+                'Worldline: could not save the checkout address to the address book: ' . $e->getMessage(),
+                ['quote_id' => $quote->getId()]
+            );
         }
     }
 }
