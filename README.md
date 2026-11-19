@@ -17,6 +17,9 @@ This solution is also included into:
 
 ### Change log:
 
+### 1.62.0
+- Added: PostFinance Pay payment method
+
 ### 1.61.0
 - Changed: Add payment method Wero
 
